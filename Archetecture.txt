@@ -1,0 +1,22 @@
+Cobra:
+    Responsibilities
+        - Window Management
+            - Settings
+            - Drawing
+        - Audio
+            - Loading & Playing Audio Files
+        - Event Handling
+            - Input
+            - In Game Event Triggers
+
+    Setup
+        1. Create Window
+
+Runtime:
+    Responsibilities
+        - Loading Game Specific Resources
+            - Lua scripts
+    
+    Setup
+        1. Load & Validate Resources
+        2. Start Cobra

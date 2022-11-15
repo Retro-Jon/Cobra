@@ -1,3 +1,3 @@
-cd Sandbox\test
-test.exe
+cd Runtime\test
+Runtime.exe
 cd ..\..

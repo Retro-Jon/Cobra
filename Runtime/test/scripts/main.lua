@@ -1,6 +1,5 @@
 function Ready()
-    Test()
-    print(ReturnTest())
+    print("Hello from LUA")
 end
 
 a = 0
@@ -14,5 +13,5 @@ function Logic()
     end
 end
 
-function Close()
+function Delete()
 end

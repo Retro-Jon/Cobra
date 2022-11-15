@@ -1,0 +1,5 @@
+#include "src/Cobra/headers/Core.hpp"
+#include "src/Cobra/headers/Window.hpp"
+#include "src/Cobra/headers/Input.hpp"
+#include "src/Cobra/headers/Component.hpp"
+#include "src/lua/include/lua.hpp"
