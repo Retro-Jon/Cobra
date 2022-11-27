@@ -1,18 +1,23 @@
 #include "Cobra.hpp"
+#include <iostream>
 
 int main()
 {
+    Cobra::PopulateTrig();
     Cobra::Window main;
-    Cobra::Input input(main.GetScreen());
-
-    Cobra::Component* root = new Cobra::Component("Root", "scripts/main.lua");
+    Cobra::CreateObject("main.lua");
 
     while (!main.Display())
     {
-        
+        for (std::pair<int, Cobra::Object*> o : Cobra::objects)
+        {
+            o.second->Logic();
+        }
     }
 
-    delete root;
+    Cobra::DeleteAllObjects();
+
+    delete &main;
 
     return 0;
 }
