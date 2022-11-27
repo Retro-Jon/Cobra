@@ -20,9 +20,9 @@ namespace Cobra
     {
         for (int i = 0; i < 360; i++)
         {
-            M.sin[i] = std::sin(i / 180.0 * M_PI);
-            M.cos[i] = std::cos(i / 180.0 * M_PI);
-            M.tan[i] = std::tan(i / 180.0 * M_PI);
+            M.sin[i] = std::sin(i);
+            M.cos[i] = std::cos(i);
+            M.tan[i] = std::tan(i);
         }
     }
     
