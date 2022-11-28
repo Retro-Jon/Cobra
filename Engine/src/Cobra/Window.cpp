@@ -30,8 +30,8 @@ namespace Cobra
         s.points = new SectorPoint[s.wall_count];
         s.points[0] = (SectorPoint){.x = -2, .y = -2};
         s.points[1] = (SectorPoint){.x = 2, .y = -2};
-        s.points[2] = (SectorPoint){.x = 2, .y = 2};
-        s.points[3] = (SectorPoint){.x = -2, .y = 2};
+        s.points[2] = (SectorPoint){.x = 4, .y = 2};
+        s.points[3] = (SectorPoint){.x = -4, .y = 2};
 
         s.top = 1;
         s.bottom = 0;
@@ -147,54 +147,41 @@ namespace Cobra
 
             if ((sw.facesNorth && cc_north && !cc_south) || (sw.facesSouth && cc_south && !cc_north) || (sw.facesEast && cc_east && !cc_west) || (sw.facesWest && cc_west && !cc_east))
             {
-                // screen coordinates
+                // x1 side
+                float m1;
+                float d1;
+                float x1;
+
+                // x2 side
+                float m2;
+                float d2;
+                float x2;
+                
+                m1 = (cc.y - sw.y1) / (cc.x - sw.x1);
+                m2 = (cc.y - sw.y2) / (cc.x - sw.x2);
+
+                x1 = -((sw.y1 - m1 * sw.x1) / m1);
+                x2 = -((sw.y2 - m2 * sw.x2) / m2);
+
+                d1 = sqrt(pow((sw.x1 - cc.x), 2) + pow((sw.y1 - cc.y), 2));
+                d2 = sqrt(pow((sw.x2 - cc.x), 2) + pow((sw.y2 - cc.y), 2));
+
                 float py[4] = {0};
                 float px[4] = {0};
 
-                // // left side
-                // float m1;
-                // float d1;
-                // float x1;
-                // float h1;
-                // float a1;
+                px[0] = m1 * d1;
+                px[1] = m2 * d2;
+                px[2] = m2 * d2;
+                px[3] = m1 * d1;
 
-                // // right side
-                // float m2;
-                // float d2;
-                // float x2;
-                // float h2;
-                // float a2;
-                
-                // // slope
-                // m1 = (cc.y - sw.y1) / (cc.x - sw.x1);
-                // m2 = (cc.y - sw.y2) / (cc.x - sw.x2);
+                float h1 = (screen_height / 2) / d1;
+                float h2 = (screen_height / 2) / d2;
 
-                // // x intercepts
-                // x1 = -((sw.y1 - m1 * sw.x1) / m1) * 2;
-                // x2 = -((sw.y2 - m2 * sw.x2) / m2) * 2;
+                py[0] = s.top * d1;
+                py[1] = s.top * d2;
+                py[2] = s.bottom * d2;
+                py[3] = s.bottom * d1;
 
-                // // angles
-                // a1 = atan2(x1, 10);
-                // a2 = atan2(x2, 10);
-
-                // // distance to wall sides
-                // d1 = sqrt(pow((sw.x1 - cc.x), 2) + pow((sw.y1 - cc.y), 2)) * M.cos[cc.angle];
-                // d2 = sqrt(pow((sw.x2 - cc.x), 2) + pow((sw.y2 - cc.y), 2)) * M.cos[cc.angle];
-
-                // // wall side height
-                // h1 = (abs(s.bottom) + abs(s.top)) / d1 * 80;
-                // h2 = (abs(s.bottom) + abs(s.top)) / d2 * 80;
-
-                // px[0] = x1;
-                // px[1] = x2;
-                // px[2] = x2;
-                // px[3] = x1;
-
-                // py[0] = h1;
-                // py[1] = h2;
-                // py[2] = -h2;
-                // py[3] = -h1;
-                
                 glColor3ub(100, 100, 100);
 
                 glBegin(GL_QUADS);
@@ -214,7 +201,7 @@ namespace Cobra
         tick++;
     }
 
-    void Window::Pixel(float x, float y, int r, int g, int b)
+    void Window::Pixel(int x, int y, int r, int g, int b)
     {
         glColor3ub(r, g, b);
         glBegin(GL_POINTS);

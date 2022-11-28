@@ -37,7 +37,7 @@ namespace Cobra
 
             void RenderView();
 
-            void Pixel(float x, float y, int r = 255, int g = 255, int b = 255);
+            void Pixel(int x, int y, int r = 255, int g = 255, int b = 255);
             bool Display();
             void CreateWindow();
             void End();

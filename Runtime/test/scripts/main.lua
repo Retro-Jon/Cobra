@@ -13,19 +13,11 @@ function KeyInput(key, action)
         end
         
         if(key == 87) then -- W
-            Push(0, -0.1, 0, 0)
+            Push(0, 0.1, 0, 0)
             --print("Forward")
         elseif(key == 83) then -- S
-            Push(0, 0.1, 0, 0)
+            Push(0, -0.1, 0, 0)
             --print("Backward")
-        end
-
-        if(key == 69) then -- E
-            Push(0, 0, 0.1, 0)
-            --print("Up")
-        elseif(key == 81) then -- Q
-            Push(0, 0, -0.1, 0)
-            --print("Down")
         end
 
         if(key == 44) then -- , <
