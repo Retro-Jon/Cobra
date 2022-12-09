@@ -17,6 +17,8 @@ namespace Cobra
         screen_height = Height;
         pixel_scale = Pixel_Scale / resolution;
 
+        UsedScreenSpace = new std::pair<float, float>[screen_width]{std::pair<float, float>{0, 0}};
+
         title = Title;
 
         current_camera = "";
@@ -182,33 +184,11 @@ namespace Cobra
                 py[2] = s.bottom * d2;
                 py[3] = s.bottom * d1;
 
-                glColor3ub(100, 100, 100);
-
-                glBegin(GL_QUADS);
-                glVertex2f(px[0], py[0]);
-                glVertex2f(px[1], py[1]);
-                glVertex2f(px[2], py[2]);
-                glVertex2f(px[3], py[3]);
-                glEnd();
-
-                Pixel(px[0], py[0]);
-                Pixel(px[1], py[1]);
-                Pixel(px[2], py[2]);
-                Pixel(px[3], py[3]);
-
-                glBegin(GL_LINES);
-                glVertex2f(cc.x, cc.y);
-                glVertex2f(x1, d1);
-                glVertex2f(cc.x, cc.y);
-                glVertex2f(x1, d2);
-                glEnd();
+                Pilar(x1, s.top * d1, s.bottom * d1);
+                Pilar(x2, s.top * d2, s.bottom * d2);
             }
 
             std::cout << cc.x << " : " << cc.y << " : " << cc.angle << std::endl;
-
-            Pixel(cc.x, cc.y, 255, 0, 0);
-            Pixel(sw.x1, sw.y1, 0, 0, 255);
-            Pixel(sw.x2, sw.y2, 0, 0, 255);
         }
 
         tick++;
@@ -219,6 +199,20 @@ namespace Cobra
         glColor3ub(r, g, b);
         glBegin(GL_POINTS);
         glVertex2i(x, y);
+        glEnd();
+    }
+
+    void Window::Pilar(int x, float top, float bottom)
+    {
+        if (bottom > 0 && bottom < UsedScreenSpace[x].first)
+            bottom = UsedScreenSpace[x].first;
+        else if (bottom < 0 && bottom > UsedScreenSpace[x].second)
+            bottom = UsedScreenSpace[x].second;
+
+        glColor3ub(255, 255, 255);
+        glBegin(GL_LINES);
+        glVertex2f(x, top);
+        glVertex2f(x, bottom);
         glEnd();
     }
 

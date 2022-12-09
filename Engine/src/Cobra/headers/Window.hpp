@@ -21,6 +21,7 @@ namespace Cobra
             std::vector<Sector> sectors;
             int current_sector;
             int running;
+            std::pair<float, float>* UsedScreenSpace;
         
         protected:
             GLFWwindow* screen;
@@ -38,6 +39,7 @@ namespace Cobra
             void RenderView();
 
             void Pixel(int x, int y, int r = 255, int g = 255, int b = 255);
+            void Pilar(int x, float top, float bottom);
             bool Display();
             void CreateWindow();
             void End();
