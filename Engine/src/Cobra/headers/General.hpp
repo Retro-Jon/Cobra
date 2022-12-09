@@ -11,6 +11,7 @@ namespace Cobra
     {
         float sin[360];
         float cos[360];
+        float tan[360];
     };
 
     COBRA_API extern struct Math M;

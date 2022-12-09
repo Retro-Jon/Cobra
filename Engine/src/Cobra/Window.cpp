@@ -140,12 +140,12 @@ namespace Cobra
             Sector s = sectors[current_sector];
             SectorWall sw = s.walls[w];
 
-            bool cc_north = (cc.y < sw.y1 || cc.y < sw.y2);
-            bool cc_south = (cc.y > sw.y1 || cc.y > sw.y2);
-            bool cc_east = (cc.x > sw.x1 || cc.x > sw.x2);
-            bool cc_west = (cc.x < sw.x1 || cc.x < sw.x2);
+            bool cc_north = (cc.y < sw.y1 || cc.y < sw.y2 && sw.facesNorth);
+            bool cc_south = (cc.y > sw.y1 || cc.y > sw.y2 && sw.facesSouth);
+            bool cc_east = (cc.x > sw.x1 || cc.x > sw.x2 && sw.facesEast);
+            bool cc_west = (cc.x < sw.x1 || cc.x < sw.x2 && sw.facesWest);
 
-            if ((sw.facesNorth && cc_north && !cc_south) || (sw.facesSouth && cc_south && !cc_north) || (sw.facesEast && cc_east && !cc_west) || (sw.facesWest && cc_west && !cc_east))
+            if ((sw.facesNorth && cc_north) || (sw.facesSouth && cc_south) || (sw.facesEast && cc_east) || (sw.facesWest && cc_west))
             {
                 // x1 side
                 float m1;
@@ -163,16 +163,16 @@ namespace Cobra
                 x1 = -((sw.y1 - m1 * sw.x1) / m1);
                 x2 = -((sw.y2 - m2 * sw.x2) / m2);
 
-                d1 = sqrt(pow((sw.x1 - cc.x), 2) + pow((sw.y1 - cc.y), 2));
-                d2 = sqrt(pow((sw.x2 - cc.x), 2) + pow((sw.y2 - cc.y), 2));
+                d1 = sqrt(pow((sw.x1 - cc.x), 2) + pow((sw.y1 - cc.y), 2)) * M.cos[cc.angle];
+                d2 = sqrt(pow((sw.x2 - cc.x), 2) + pow((sw.y2 - cc.y), 2)) * M.cos[cc.angle];
 
                 float py[4] = {0};
                 float px[4] = {0};
 
-                px[0] = m1 * d1;
-                px[1] = m2 * d2;
-                px[2] = m2 * d2;
-                px[3] = m1 * d1;
+                px[0] = x1 * d1;
+                px[1] = x2 * d2;
+                px[2] = x2 * d2;
+                px[3] = x1 * d1;
 
                 float h1 = (screen_height / 2) / d1;
                 float h2 = (screen_height / 2) / d2;
@@ -195,7 +195,20 @@ namespace Cobra
                 Pixel(px[1], py[1]);
                 Pixel(px[2], py[2]);
                 Pixel(px[3], py[3]);
+
+                glBegin(GL_LINES);
+                glVertex2f(cc.x, cc.y);
+                glVertex2f(x1, d1);
+                glVertex2f(cc.x, cc.y);
+                glVertex2f(x1, d2);
+                glEnd();
             }
+
+            std::cout << cc.x << " : " << cc.y << " : " << cc.angle << std::endl;
+
+            Pixel(cc.x, cc.y, 255, 0, 0);
+            Pixel(sw.x1, sw.y1, 0, 0, 255);
+            Pixel(sw.x2, sw.y2, 0, 0, 255);
         }
 
         tick++;

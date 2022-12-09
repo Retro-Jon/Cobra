@@ -24,15 +24,8 @@ namespace Cobra
     Pos operator - (const Pos& a, const Pos& b)
     {
         Pos res;
-        res.x = a.x - b.x;
-        res.y = a.y - b.y;
-        res.z = a.z - b.z;
-        res.angle = a.angle - b.angle;
 
-        if (res.angle > 359)
-            res.angle -= 360;
-        else if (res.angle < 0)
-            res.angle += 360;
+        res = a + (Pos){.x = -b.x, .y = -b.y, .z = -b.z, .angle = -b.angle};
         
         return res;
     }

@@ -1,5 +1,5 @@
 function OnReady()
-    CreateCamera("main", 0, 0, 0, 0)
+    CreateCamera("main", 0, -25, 0, 0)
     BindToCamera("main")
 end
 
@@ -14,26 +14,26 @@ function KeyInput(key, action)
         
         if(key == 87) then -- W
             Push(0, 0.1, 0, 0)
-            --print("Forward")
+            -- print("Forward")
         elseif(key == 83) then -- S
             Push(0, -0.1, 0, 0)
-            --print("Backward")
+            -- print("Backward")
         end
 
         if(key == 44) then -- , <
             Push(-0.1, 0, 0, 0)
-            --print("Strafe Left")
+            -- print("Strafe Left")
         elseif(key == 46) then -- . >
             Push(0.1, 0, 0, 0)
-            --print("Strafe Right")
+            -- print("Strafe Right")
         end
 
         if(key == 65) then -- A
-            Push(0, 0, 0, -0.1)
-            --print("Look Left")
+            Push(0, 0, 0, -1)
+            -- print("Look Left")
         elseif(key == 68) then -- D
-            Push(0, 0, 0, 0.1)
-            --print("Look Right")
+            Push(0, 0, 0, 1)
+            -- print("Look Right")
         end
     end
 end
