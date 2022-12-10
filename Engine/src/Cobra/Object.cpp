@@ -71,6 +71,33 @@ namespace Cobra
         position += direction;
     }
 
+    void Object::Push(Pos force)
+    {
+        position.angle += force.angle;
+
+        Clamp(position.angle, 0, 360);
+
+        if (force.x != 0)
+        {
+            if (M.tan[position.angle] <= 90 || M.tan[position.angle] >= 270)
+            {
+                position.x += force.x * M.cos[position.angle];
+                position.y -= force.x * M.sin[position.angle];
+            } else {
+                position.x -= force.x * M.cos[position.angle];
+                position.y += force.x * M.sin[position.angle];
+            }
+        }
+
+        if (force.y != 0)
+        {
+            position.x += force.x * M.cos[position.angle];
+            position.y += force.y * M.cos[position.angle];
+        }
+
+        position.z += force.z;
+    }
+
     void Object::BindToCamera(std::string camera)
     {
         bound_camera = camera;

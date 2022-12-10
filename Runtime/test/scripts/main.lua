@@ -13,26 +13,26 @@ function KeyInput(key, action)
         end
         
         if(key == 87) then -- W
-            Push(0, 0.1, 0, 0)
+            Push(0, 0.5, 0, 0)
             --print("Forward")
         elseif(key == 83) then -- S
-            Push(0, -0.1, 0, 0)
+            Push(0, -0.5, 0, 0)
             --print("Backward")
         end
 
         if(key == 44) then -- , <
-            Push(-0.1, 0, 0, 0)
+            Push(-0.5, 0, 0, 0)
             --print("Strafe Left")
         elseif(key == 46) then -- . >
-            Push(0.1, 0, 0, 0)
+            Push(0.5, 0, 0, 0)
             --print("Strafe Right")
         end
 
         if(key == 65) then -- A
-            Push(0, 0, 0, -0.1)
+            Push(0, 0, 0, -1)
             --print("Look Left")
         elseif(key == 68) then -- D
-            Push(0, 0, 0, 0.1)
+            Push(0, 0, 0, 1)
             --print("Look Right")
         end
     end

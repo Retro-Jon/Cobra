@@ -13,10 +13,7 @@ namespace Cobra
         res.z = a.z + b.z;
         res.angle = a.angle + b.angle;
 
-        if (res.angle > 359)
-            res.angle -= 360;
-        else if (res.angle < 0)
-            res.angle += 360;
+        Clamp(res.angle, 0, 360);
         
         return res;
     }
@@ -29,10 +26,7 @@ namespace Cobra
         res.z = a.z - b.z;
         res.angle = a.angle - b.angle;
 
-        if (res.angle > 359)
-            res.angle -= 360;
-        else if (res.angle < 0)
-            res.angle += 360;
+        Clamp(res.angle, 0, 360);
         
         return res;
     }

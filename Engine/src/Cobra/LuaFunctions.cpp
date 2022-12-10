@@ -50,23 +50,11 @@ int Push(lua_State* L)
     f.z = (float)lua_tonumber(L, 3);
     f.angle = lua_tointeger(L, 4);
 
-    float dx, dy = 0.0f;
-
-    if (f.x > 0)
-        dx -= Cobra::M.sin[f.angle];
-    else if (f.x < 0)
-        dx += Cobra::M.sin[f.angle];
-
-    if (f.y > 0)
-        dy += Cobra::M.cos[f.angle];
-    else if (f.y < 0)
-        dy -= Cobra::M.cos[f.angle];
-
-    Cobra::objects[idx]->Move(f);
+    Cobra::objects[idx]->Push(f);
 
     if (Cobra::objects[idx]->GetBoundCamera() != "")
     {
-        Cobra::window->MoveCamera(Cobra::objects[idx]->GetBoundCamera(), f);
+        Cobra::window->PushCamera(Cobra::objects[idx]->GetBoundCamera(), f);
     }
 
     return 0;

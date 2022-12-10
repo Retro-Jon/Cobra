@@ -20,10 +20,22 @@ namespace Cobra
     {
         for (int i = 0; i < 360; i++)
         {
-            M.sin[i] = std::sin(i);
-            M.cos[i] = std::cos(i);
-            M.tan[i] = std::tan(i);
+            float v = ((float)i) * (M_PI / 180);
+            M.sin[i] = std::sin(v);
+            M.cos[i] = std::cos(v);
+            M.tan[i] = std::tan(v);
         }
+    }
+
+    template <typename T> static void Clamp(T& value, const T& lower, const T& upper)
+    {
+        T difference = upper - lower;
+
+        if (value > upper - 1)
+            value -= difference;
+        
+        if (value < lower)
+            value += difference;
     }
     
     struct Pos

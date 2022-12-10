@@ -104,12 +104,40 @@ namespace Cobra
 
     void Window::MoveActiveCamera(Pos force)
     {
-        cameras[current_camera] += force;
+        MoveCamera(current_camera, force);
     }
 
     void Window::MoveCamera(std::string name, Pos force)
     {
         cameras[name] += force;
+    }
+
+    void Window::PushCamera(std::string name, Pos force)
+    {
+        Pos* cc = &cameras[name];
+
+        cc->angle += force.angle;
+
+        Clamp(cc->angle, 0, 360);
+        
+        if (force.x != 0)
+        {
+            if (M.tan[cc->angle] <= 90 || M.tan[cc->angle] >= 270)
+            {
+                cc->x += force.x * M.cos[cc->angle];
+                cc->y -= force.x * M.sin[cc->angle];
+            } else {
+                cc->x -= force.x * M.cos[cc->angle];
+                cc->y += force.x * M.sin[cc->angle];
+            }
+        }
+        if (force.y != 0)
+        {
+            cc->x += force.x * M.cos[cc->angle];
+            cc->y += force.y * M.sin[cc->angle];
+        }
+
+        cc->z += force.z;
     }
 
     void Window::CreateNewCamera(std::string name, Pos position)
@@ -128,17 +156,38 @@ namespace Cobra
     void Window::RenderView()
     {
         static int tick = 0;
+        const int dist = 10;
         const float fov = 45;
 
         Pos cc = cameras[current_camera];
+        // std::cout << cc << std::endl;
 
-        float CS = M.cos[cc.angle];
-        float SN = M.sin[cc.angle];
-        
+        float offset_x = M.sin[cc.angle];
+        float offset_y = M.cos[cc.angle];
+
         for (int w = 0; w < sectors[current_sector].wall_count; w++)
         {
             Sector s = sectors[current_sector];
             SectorWall sw = s.walls[w];
+
+            auto CastRay = [cc, sw, dist, offset_x, offset_y]()
+            {
+                float rx = 0;
+                float ry = 0;
+                
+                float m = (sw.y1 - sw.y2) / (sw.x1 - sw.x2);
+
+                for (float d = 1; d < dist; d += 0.1)
+                {
+                    rx += offset_x;
+                    ry += offset_y;
+
+                    if ((rx >= sw.x1 || rx >= sw.x2) && (ry >= sw.y1 || ry >= sw.y2))
+                        return d;
+                }
+
+                return (float)dist;
+            };
 
             bool cc_north = (cc.y < sw.y1 || cc.y < sw.y2);
             bool cc_south = (cc.y > sw.y1 || cc.y > sw.y2);
@@ -147,55 +196,28 @@ namespace Cobra
 
             if ((sw.facesNorth && cc_north && !cc_south) || (sw.facesSouth && cc_south && !cc_north) || (sw.facesEast && cc_east && !cc_west) || (sw.facesWest && cc_west && !cc_east))
             {
-                // x1 side
-                float m1;
-                float d1;
-                float x1;
+                glColor3ub(255, 255, 255);
+                glBegin(GL_LINES);
+                for (int screen_x = -screen_width / 2; screen_x < screen_width / 2; screen_x += 1)
+                {
+                    int a = (cc.angle + (screen_x));
+                    float d = CastRay();
 
-                // x2 side
-                float m2;
-                float d2;
-                float x2;
-                
-                m1 = (cc.y - sw.y1) / (cc.x - sw.x1);
-                m2 = (cc.y - sw.y2) / (cc.x - sw.x2);
-
-                x1 = -((sw.y1 - m1 * sw.x1) / m1);
-                x2 = -((sw.y2 - m2 * sw.x2) / m2);
-
-                d1 = sqrt(pow((sw.x1 - cc.x), 2) + pow((sw.y1 - cc.y), 2));
-                d2 = sqrt(pow((sw.x2 - cc.x), 2) + pow((sw.y2 - cc.y), 2));
-
-                float py[4] = {0};
-                float px[4] = {0};
-
-                px[0] = m1 * d1;
-                px[1] = m2 * d2;
-                px[2] = m2 * d2;
-                px[3] = m1 * d1;
-
-                float h1 = (screen_height / 2) / d1;
-                float h2 = (screen_height / 2) / d2;
-
-                py[0] = s.top * d1;
-                py[1] = s.top * d2;
-                py[2] = s.bottom * d2;
-                py[3] = s.bottom * d1;
-
-                glColor3ub(100, 100, 100);
-
-                glBegin(GL_QUADS);
-                glVertex2f(px[0], py[0]);
-                glVertex2f(px[1], py[1]);
-                glVertex2f(px[2], py[2]);
-                glVertex2f(px[3], py[3]);
+                    if (d < dist)
+                    {
+                        glVertex2f(screen_x, d);
+                        glVertex2f(screen_x, -d);
+                    }
+                }
                 glEnd();
-
-                Pixel(px[0], py[0]);
-                Pixel(px[1], py[1]);
-                Pixel(px[2], py[2]);
-                Pixel(px[3], py[3]);
             }
+
+            glBegin(GL_POINTS);
+            glColor3ub(255, 0, 0);
+            glVertex2f(cc.x, cc.y);
+            glColor3ub(0, 0, 255);
+            glVertex2f(cc.x + M.sin[cc.angle] * 6, cc.y + M.cos[cc.angle] * 6);
+            glEnd();
         }
 
         tick++;
@@ -206,20 +228,6 @@ namespace Cobra
         glColor3ub(r, g, b);
         glBegin(GL_POINTS);
         glVertex2i(x, y);
-        glEnd();
-    }
-
-    void Window::Pilar(int x, float top, float bottom)
-    {
-        if (bottom > 0 && bottom < UsedScreenSpace[x].first)
-            bottom = UsedScreenSpace[x].first;
-        else if (bottom < 0 && bottom > UsedScreenSpace[x].second)
-            bottom = UsedScreenSpace[x].second;
-
-        glColor3ub(255, 255, 255);
-        glBegin(GL_LINES);
-        glVertex2f(x, top);
-        glVertex2f(x, bottom);
         glEnd();
     }
 

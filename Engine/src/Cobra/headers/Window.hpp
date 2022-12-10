@@ -33,13 +33,13 @@ namespace Cobra
             bool SwitchActiveCamera(int camera = 0);
             void MoveActiveCamera(Pos force = (Pos){.x = 0, .y = 0, .z = 0, .angle = 0});
             void MoveCamera(std::string name = "", Pos force = (Pos){.x = 0, .y = 0, .z = 0, .angle = 0});
+            void PushCamera(std::string name = "", Pos force = (Pos){.x = 0, .y = 0, .z = 0, .angle = 0});
             void CreateNewCamera(std::string name, Pos position = (Pos){.x = 0, .y = 0, .z = 0, .angle = 0});
             int GetCameraCount();
 
             void RenderView();
 
             void Pixel(int x, int y, int r = 255, int g = 255, int b = 255);
-            void Pilar(int x, float top, float bottom);
             bool Display();
             void CreateWindow();
             void End();

@@ -33,6 +33,7 @@ namespace Cobra
 
             // lua and C++
             void Move(Pos direction);
+            void Push(Pos direction);
             void BindToCamera(std::string camera);
 
             std::string GetBoundCamera();
