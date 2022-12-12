@@ -77,22 +77,25 @@ namespace Cobra
 
         Clamp(position.angle, 0, 360);
 
+        double COS = M.cos[(int)position.angle];
+        double SIN = M.sin[(int)position.angle];
+
         if (force.x != 0)
         {
-            if (M.tan[position.angle] <= 90 || M.tan[position.angle] >= 270)
+            if (M.tan[(int)position.angle] <= 90 || M.tan[(int)position.angle] >= 270)
             {
-                position.x += force.x * M.cos[position.angle];
-                position.y -= force.x * M.sin[position.angle];
+                position.x += force.x * COS;
+                position.y -= force.x * SIN;
             } else {
-                position.x -= force.x * M.cos[position.angle];
-                position.y += force.x * M.sin[position.angle];
+                position.x -= force.x * COS;
+                position.y += force.x * SIN;
             }
         }
 
         if (force.y != 0)
         {
-            position.x += force.x * M.cos[position.angle];
-            position.y += force.y * M.cos[position.angle];
+            position.x += force.y * SIN;
+            position.y += force.y * COS;
         }
 
         position.z += force.z;

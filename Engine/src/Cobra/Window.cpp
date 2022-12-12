@@ -16,50 +16,23 @@ namespace Cobra
         screen_width = Width;
         screen_height = Height;
         pixel_scale = Pixel_Scale / resolution;
-
+        
         title = Title;
 
         current_camera = "";
         current_sector = 0;
 
         Sector s;
+        s.point_count = 4;
+        s.points = new SectorPoint[s.point_count];
 
-        s.wall_count = 4;
-        s.walls = new SectorWall[s.wall_count];
-
-        s.points = new SectorPoint[s.wall_count];
-        s.points[0] = (SectorPoint){.x = -2, .y = -2};
-        s.points[1] = (SectorPoint){.x = 2, .y = -2};
-        s.points[2] = (SectorPoint){.x = 4, .y = 2};
-        s.points[3] = (SectorPoint){.x = -4, .y = 2};
+        s.points[0] = (SectorPoint){.x = -10, .y = -10, .FacesNorth = false, .FacesEast = false};
+        s.points[1] = (SectorPoint){.x = 10, .y = -10, .FacesNorth = false, .FacesEast = true};
+        s.points[2] = (SectorPoint){.x = 10, .y = 10, .FacesNorth = true, .FacesEast = true};
+        s.points[3] = (SectorPoint){.x = -10, .y = 10, .FacesNorth = true, .FacesEast = false};
 
         s.top = 1;
         s.bottom = 0;
-
-        for (int w = 0; w < s.wall_count; w++)
-        {
-            s.walls[w].x1 = s.points[w].x;
-            s.walls[w].y1 = s.points[w].y;
-
-            if (w + 1 < s.wall_count)
-            {
-                s.walls[w].x2 = s.points[w + 1].x;
-                s.walls[w].y2 = s.points[w + 1].y;
-            } else {
-                s.walls[w].x2 = s.points[0].x;
-                s.walls[w].y2 = s.points[0].y;
-            }
-        }
-
-        s.walls[0].facesNorth = true;
-
-        s.walls[1].facesSouth = true;
-        s.walls[1].facesEast = true;
-        
-        s.walls[2].facesSouth = true;
-
-        s.walls[3].facesSouth = true;
-        s.walls[3].facesWest = true;
 
         sectors.push_back(s);
 
@@ -119,22 +92,25 @@ namespace Cobra
         cc->angle += force.angle;
 
         Clamp(cc->angle, 0, 360);
+
+        double COS = M.cos[(int)cc->angle];
+        double SIN = M.sin[(int)cc->angle];
         
         if (force.x != 0)
         {
-            if (M.tan[cc->angle] <= 90 || M.tan[cc->angle] >= 270)
+            if (M.tan[(int)cc->angle] <= 90 || M.tan[(int)cc->angle] >= 270)
             {
-                cc->x += force.x * M.cos[cc->angle];
-                cc->y -= force.x * M.sin[cc->angle];
+                cc->x += force.x * COS;
+                cc->y -= force.x * SIN;
             } else {
-                cc->x -= force.x * M.cos[cc->angle];
-                cc->y += force.x * M.sin[cc->angle];
+                cc->x -= force.x * COS;
+                cc->y += force.x * SIN;
             }
         }
         if (force.y != 0)
         {
-            cc->x += force.x * M.cos[cc->angle];
-            cc->y += force.y * M.sin[cc->angle];
+            cc->x += force.y * SIN;
+            cc->y += force.y * COS;
         }
 
         cc->z += force.z;
@@ -156,69 +132,135 @@ namespace Cobra
     void Window::RenderView()
     {
         static int tick = 0;
-        const int dist = 10;
-        const float fov = 45;
+        const double fov = 30;
+        const double multiplier = screen_width / fov;
+        const double view_distance = 50;
+        const int view_bound = 50;
 
         Pos cc = cameras[current_camera];
-        // std::cout << cc << std::endl;
 
-        float offset_x = M.sin[cc.angle];
-        float offset_y = M.cos[cc.angle];
+        glBegin(GL_QUADS);
 
-        for (int w = 0; w < sectors[current_sector].wall_count; w++)
+        double m1, d1, t1, b1;
+        double m2, d2, t2, b2;
+
+        std::pair<double, double> intercept1;
+        std::pair<double, double> intercept2;
+
+        bool North = ((cc.angle < 90 - view_bound || cc.angle > 270 + view_bound) || cc.angle == 0);
+        bool East = ((cc.angle < 180 - view_bound) || cc.angle == 90);
+        bool South = ((cc.angle > 90 + view_bound && cc.angle < 270 - view_bound) || cc.angle == 180);
+        bool West = ((cc.angle > 180 + view_bound) || cc.angle == 270);
+
+        SectorPoint points[4];
+
+        std::pair<double, double> last_intercept = std::pair<double, double>(0, 0);
+        double last_d = 1000;
+        
+        for (int pc = 0; pc < sectors[current_sector].point_count; pc++)
         {
-            Sector s = sectors[current_sector];
-            SectorWall sw = s.walls[w];
+            SectorPoint p1 = sectors[current_sector].points[pc];
+            points[pc] = p1;
+            SectorPoint p2;
+            
+            if (pc + 1 < sectors[current_sector].point_count)
+                p2 = sectors[current_sector].points[pc + 1];
+            else
+                p2 = sectors[current_sector].points[0];
+            
+            double s1, s2;
 
-            auto CastRay = [cc, sw, dist, offset_x, offset_y]()
             {
-                float rx = 0;
-                float ry = 0;
+                d1 = std::sqrt(pow((p1.x - (cc.x * M.tan[(int)cc.angle])), 2) + pow((p1.y - cc.y), 2));
+
+                d2 = std::sqrt(pow((p2.x - (cc.x * M.tan[(int)cc.angle])), 2) + pow((p2.y - cc.y), 2));
+
+                intercept1 = LineGraph(cc.x + M.cos[(int)cc.angle], cc.y - M.sin[(int)cc.angle], cc.x, cc.y, p1.x, p1.y);
+                intercept2 = LineGraph(cc.x + M.cos[(int)cc.angle], cc.y - M.sin[(int)cc.angle], cc.x, cc.y, p2.x, p2.y);
+
+                intercept1.first -= (cc.x * M.cos[(int)cc.angle]) - (cc.y * M.sin[(int)cc.angle]);
+                intercept1.second += (cc.x * M.cos[(int)cc.angle]) + (cc.y * M.sin[(int)cc.angle]);
                 
-                float m = (sw.y1 - sw.y2) / (sw.x1 - sw.x2);
+                intercept2.first -= (cc.x * M.cos[(int)cc.angle]) - (cc.y * M.sin[(int)cc.angle]);
+                intercept2.second += (cc.x * M.cos[(int)cc.angle]) + (cc.y * M.sin[(int)cc.angle]);
 
-                for (float d = 1; d < dist; d += 0.1)
-                {
-                    rx += offset_x;
-                    ry += offset_y;
+                Clamp(intercept1.first, -fov, fov, false);
+                Clamp(intercept1.second, -fov, fov, false);
+                Clamp(intercept2.first, -fov, fov, false);
+                Clamp(intercept2.second, -fov, fov, false);
 
-                    if ((rx >= sw.x1 || rx >= sw.x2) && (ry >= sw.y1 || ry >= sw.y2))
-                        return d;
-                }
+                t1 = (screen_height / 2 - d1) - sectors[current_sector].top;
+                t2 = (screen_height / 2 - d2) - sectors[current_sector].top;
 
-                return (float)dist;
-            };
+                Clamp(t1, 0, (screen_height / 2), false);
+                Clamp(t2, 0, (screen_height / 2), false);
 
-            bool cc_north = (cc.y < sw.y1 || cc.y < sw.y2);
-            bool cc_south = (cc.y > sw.y1 || cc.y > sw.y2);
-            bool cc_east = (cc.x > sw.x1 || cc.x > sw.x2);
-            bool cc_west = (cc.x < sw.x1 || cc.x < sw.x2);
+                b1 = (-screen_height / 2 + d1) - sectors[current_sector].bottom;
+                b2 = (-screen_height / 2 + d2) - sectors[current_sector].bottom;
 
-            if ((sw.facesNorth && cc_north && !cc_south) || (sw.facesSouth && cc_south && !cc_north) || (sw.facesEast && cc_east && !cc_west) || (sw.facesWest && cc_west && !cc_east))
-            {
-                glColor3ub(255, 255, 255);
-                glBegin(GL_LINES);
-                for (int screen_x = -screen_width / 2; screen_x < screen_width / 2; screen_x += 1)
-                {
-                    int a = (cc.angle + (screen_x));
-                    float d = CastRay();
-
-                    if (d < dist)
-                    {
-                        glVertex2f(screen_x, d);
-                        glVertex2f(screen_x, -d);
-                    }
-                }
-                glEnd();
+                Clamp(b1, -screen_height / 2, 0, false);
+                Clamp(b2, -screen_height / 2, 0, false);
             }
 
-            glBegin(GL_POINTS);
-            glColor3ub(255, 0, 0);
-            glVertex2f(cc.x, cc.y);
-            glColor3ub(0, 0, 255);
-            glVertex2f(cc.x + M.sin[cc.angle] * 6, cc.y + M.cos[cc.angle] * 6);
-            glEnd();
+            double adjustment;
+            bool draw = false;
+
+            // if ((p1.FacesNorth == North && p2.FacesNorth == North) || (p1.FacesNorth == South && p2.FacesNorth == South))
+            // {
+                s1 = intercept1.first * multiplier;
+                s2 = intercept2.first * multiplier;
+                adjustment = M.cos[(int)cc.angle];
+                draw = true;
+            // } else if ((p1.FacesEast == East && p2.FacesEast == East) || (p1.FacesEast == West && p2.FacesEast == West))
+            // {
+            //     s1 = intercept1.second * multiplier;
+            //     s2 = intercept2.second * multiplier;
+            //     adjustment = M.sin[(int)cc.angle];
+            //     draw = true;
+            // }
+
+            if (draw)
+            {
+                glColor3ub(0, 0, 255);
+                switch (pc)
+                {
+                    case 0:
+                        glColor3ub(255, 0, 0);
+                        break;
+                    case 1:
+                        glColor3ub(0, 0, 255);
+                        break;
+                    case 2:
+                        glColor3ub(255, 255, 0);
+                        break;
+                    case 3:
+                        glColor3ub(0, 255, 0);
+                        break;
+                }
+
+                glVertex2f(s1, t1 * adjustment);
+                glVertex2f(s1, b1 * adjustment);
+                glVertex2f(s2, b2 * adjustment);
+                glVertex2f(s2, t2 * adjustment);
+            }
         }
+        glEnd();
+
+        UsedScreenSpace.clear();
+
+        glColor3ub(255, 255, 255);
+        glBegin(GL_POINTS);
+
+        for (int i = 0; i < sectors[current_sector].point_count; i++)
+            glVertex2f(points[i].x, points[i].y);
+        
+        glVertex2f(cc.x, cc.y);
+        
+        double a = cc.angle + 90;
+        Clamp(a, 0, 360);
+
+        glVertex2f(cc.x - M.cos[(int)a] * 6, cc.y + M.sin[(int)a] * 6);
+        glEnd();
 
         tick++;
     }

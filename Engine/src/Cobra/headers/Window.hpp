@@ -21,7 +21,7 @@ namespace Cobra
             std::vector<Sector> sectors;
             int current_sector;
             int running;
-            std::pair<float, float>* UsedScreenSpace;
+            std::vector<std::pair<int, int>> UsedScreenSpace;
         
         protected:
             GLFWwindow* screen;

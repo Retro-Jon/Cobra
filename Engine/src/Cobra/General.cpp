@@ -43,6 +43,26 @@ namespace Cobra
         return a;
     }
 
+    bool operator == (const Pos& a, const Pos& b)
+    {
+        bool xs = false;
+        bool ys = false;
+        bool zs = false;
+        bool as = false;
+
+        xs = ((int)a.x == (int)b.x);
+        ys = ((int)a.y == (int)b.y);
+        zs = ((int)a.z == (int)b.z);
+        as = ((int)a.angle == (int)b.angle);
+
+        return (xs && ys && zs && as);
+    }
+
+    bool operator != (const Pos& a, const Pos& b)
+    {
+        return !(a == b);
+    }
+
     std::ostream& operator << (std::ostream& o, const Pos& p)
     {
         o << "X: " << p.x << ", ";

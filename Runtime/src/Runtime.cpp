@@ -3,7 +3,7 @@
 
 int main()
 {
-    Cobra::PopulateTrig();
+    Cobra::PopulateMath();
     Cobra::Window main;
     Cobra::CreateObject("main.lua");
 
@@ -16,8 +16,6 @@ int main()
     }
 
     Cobra::DeleteAllObjects();
-
-    delete &main;
 
     return 0;
 }
