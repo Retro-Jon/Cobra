@@ -8,8 +8,6 @@ namespace Cobra
     {
         int x;
         int y;
-        bool FacesNorth;
-        bool FacesEast;
     };
 
     struct Sector
