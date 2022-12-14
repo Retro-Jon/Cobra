@@ -5,6 +5,8 @@
 #include <cmath>
 #include <ostream>
 #include <iostream>
+#include "../../lua/include/lua.hpp"
+#include <type_traits>
 
 namespace Cobra
 {
@@ -14,7 +16,6 @@ namespace Cobra
         double cos[360];
         double tan[360];
         double rad[360];
-        int square[360];
     };
 
     COBRA_API extern struct Math M;
@@ -25,13 +26,19 @@ namespace Cobra
         {
             double v = ((double)i) * (M_PI / 180);
             M.rad[i] = v;
-            M.square[i] = i * i;
 
             M.sin[i] = std::sin(v);
             M.cos[i] = std::cos(v);
             M.tan[i] = std::tan(v);
         }
     }
+
+    COBRA_API extern double ElapsedTime;
+
+    COBRA_API extern void CalculateElapsedTime();
+
+    COBRA_API extern int RoundToInt(double num);
+    COBRA_API extern int RoundToInt(double num, double comp);
 
     template <typename T, typename T2, typename T3>
     static void Clamp(T& value, const T2& lower, const T3& upper, bool reset = true)
@@ -84,12 +91,46 @@ namespace Cobra
         return std::pair<double, double>(xi, yi);
     }
 
+    COBRA_API extern double dist(double x1, double y1, double x2, double y2);
+
+    template <typename T>
+    struct Data
+    {
+        T v;
+    };
+
+    template<class T>
+    static T LuaGetTableNumberValue(lua_State* L, const char* key)
+    {
+        T res;
+        lua_pushstring(L, key);
+        lua_gettable(L, -2);
+        
+        res = (T)lua_tonumber(L, -1);
+
+        lua_pop(L, 1);
+        return res;
+    }
+
+    static const char* LuaGetTableStringValue(lua_State* L, const char* key)
+    {
+        const char* res;
+        lua_pushstring(L, key);
+        lua_gettable(L, -2);
+        
+        res = lua_tostring(L, -1);
+
+        lua_pop(L, 1);
+        return res;
+    }
+
     struct Pos
     {
         double x;
         double y;
         double z;
-        double angle;
+        double horizontal;
+        double vertical;
     };
 
     Pos operator + (const Pos& a, const Pos& b);

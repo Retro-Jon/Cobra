@@ -1,13 +1,78 @@
 #include "headers/Window.hpp"
 #include "headers/Object.hpp"
+#include "headers/General.hpp"
 
 #include <algorithm>
+
+void dumpstack (lua_State *L) {
+  int top=lua_gettop(L);
+  for (int i=1; i <= top; i++) {
+    printf("%d\t%s\t", i, luaL_typename(L,i));
+    switch (lua_type(L, i)) {
+      case LUA_TNUMBER:
+        printf("%g\n",lua_tonumber(L,i));
+        break;
+      case LUA_TSTRING:
+        printf("%s\n",lua_tostring(L,i));
+        break;
+      case LUA_TBOOLEAN:
+        printf("%s\n", (lua_toboolean(L, i) ? "true" : "false"));
+        break;
+      case LUA_TNIL:
+        printf("%s\n", "nil");
+        break;
+      default:
+        printf("%p\n",lua_topointer(L,i));
+        break;
+    }
+  }
+}
 
 namespace Cobra
 {
     Window* window;
 
-    Window::Window(int Width, int Height, int Resolution, int Pixel_Scale, const char* Title)
+    Window::Window(std::string ScriptPath)
+    {
+        if (ScriptPath != "")
+        {
+            int w, h, r, p, f;
+
+            std::string t;
+
+            lua_State* settings = luaL_newstate();
+
+            luaL_dofile(settings, ("scripts/" + ScriptPath).c_str());
+            
+            lua_getglobal(settings, "Settings");
+            lua_pushstring(settings, "Window");
+            lua_gettable(settings, -2);
+
+            w = LuaGetTableNumberValue<int>(settings, "Width");
+            h = LuaGetTableNumberValue<int>(settings, "Height");
+            r = LuaGetTableNumberValue<int>(settings, "Resolution");
+            p = LuaGetTableNumberValue<int>(settings, "PixelScale");
+            t = LuaGetTableStringValue(settings, "Title");
+
+            lua_pop(settings, 1);
+            lua_pushstring(settings, "Rendering");
+            lua_gettable(settings, -2);
+
+            f = LuaGetTableNumberValue<int>(settings, "Fov");
+            Init(w, h, r, p, f, t.c_str());
+
+            lua_close(settings);
+        } else {
+            Init(160, 120, 1, 4, 200, "Cobra");
+        }
+    }
+
+    Window::Window(int Width, int Height, int Resolution, int Pixel_Scale, int Fov, const char* Title)
+    {
+        Init(Width, Height, Resolution, Pixel_Scale, Fov, Title);
+    }
+
+    void Window::Init(int Width, int Height, int Resolution, int Pixel_Scale, int Fov, const char* Title)
     {
         running = true;
         window = this;
@@ -16,25 +81,44 @@ namespace Cobra
         screen_width = Width;
         screen_height = Height;
         pixel_scale = Pixel_Scale / resolution;
+
+        fov = Fov * Resolution;
+
+        if (Resolution > Pixel_Scale)
+            std::cout << "Resolution can't be bigger than Pixel_Scale." << std::endl;
         
         title = Title;
 
         current_camera = "";
         current_sector = 0;
 
-        Sector s;
-        s.point_count = 4;
-        s.points = new SectorPoint[s.point_count];
+        for (int sx = -8; sx <= 8; sx += 8)
+        {
+            Sector s;
+            s.wall_count = 4;
+            s.walls = new SectorWall[4];
+            SectorPoint points[4];
 
-        s.points[0] = (SectorPoint){.x = -10, .y = -10};
-        s.points[1] = (SectorPoint){.x = 10, .y = -10};
-        s.points[2] = (SectorPoint){.x = 10, .y = 10};
-        s.points[3] = (SectorPoint){.x = -10, .y = 10};
+            points[0] = (SectorPoint){.x = sx + -2, .y = -2};
+            points[1] = (SectorPoint){.x = sx + 2, .y = -2};
+            points[2] = (SectorPoint){.x = sx + 2, .y = 2};
+            points[3] = (SectorPoint){.x = sx + -2, .y = 2};
+            
+            for (int w = 0; w < s.wall_count; w++)
+            {
+                s.walls[w].p1 = points[w];
 
-        s.top = 1;
-        s.bottom = 0;
+                if (w +1 < s.wall_count)
+                    s.walls[w].p2 = points[w + 1];
+                else
+                    s.walls[w].p2 = points[0];
+            }
 
-        sectors.push_back(s);
+            s.top = 2;
+            s.bottom = 0;
+
+            sectors.push_back(s);
+        }
 
         CreateWindow();
     }
@@ -51,7 +135,13 @@ namespace Cobra
         glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
 
         glfwMakeContextCurrent(screen);
-        glOrtho(-(screen_width / 2) * resolution, (screen_width / 2) * resolution, -(screen_height / 2) * resolution, (screen_height / 2) * resolution, -1.0f, 1.0f);
+        glOrtho(0, screen_width * resolution, 0, screen_height * resolution, -1.0f, 1.0f);
+    }
+
+    void Window::SetTitle(const char* Title)
+    {
+        glfwSetWindowTitle(screen, Title);
+        title = Title;
     }
 
     void Window::End()
@@ -82,23 +172,25 @@ namespace Cobra
 
     void Window::MoveCamera(std::string name, Pos force)
     {
-        cameras[name] += force;
+        cameras[name] = force;
     }
 
     void Window::PushCamera(std::string name, Pos force)
     {
         Pos* cc = &cameras[name];
 
-        cc->angle += force.angle;
+        cc->horizontal += force.horizontal * ElapsedTime;
+        cc->vertical += force.vertical * ElapsedTime;
 
-        Clamp(cc->angle, 0, 360);
+        Clamp(cc->horizontal, 0, 360);
+        Clamp(cc->vertical, 0, 360);
 
-        double COS = M.cos[(int)cc->angle];
-        double SIN = M.sin[(int)cc->angle];
+        double COS = M.cos[(int)cc->horizontal] * ElapsedTime;
+        double SIN = M.sin[(int)cc->horizontal] * ElapsedTime;
         
         if (force.x != 0)
         {
-            if (M.tan[(int)cc->angle] <= 90 || M.tan[(int)cc->angle] >= 270)
+            if (M.tan[(int)cc->horizontal] <= 90 || M.tan[(int)cc->horizontal] >= 270)
             {
                 cc->x += force.x * COS;
                 cc->y -= force.x * SIN;
@@ -113,7 +205,7 @@ namespace Cobra
             cc->y += force.y * COS;
         }
 
-        cc->z += force.z;
+        cc->z += force.z * ElapsedTime;
     }
 
     void Window::CreateNewCamera(std::string name, Pos position)
@@ -131,124 +223,144 @@ namespace Cobra
 
     void Window::RenderView()
     {
-        static int tick = 0;
-        const double fov = 30;
         const double multiplier = screen_width / fov;
-        const double view_distance = 50;
-        const int view_bound = 50;
-
+        
         Pos cc = cameras[current_camera];
-
-        glBegin(GL_QUADS);
-
-        double m1, d1, t1, b1;
-        double m2, d2, t2, b2;
-
-        std::pair<double, double> intercept1;
-        std::pair<double, double> intercept2;
         
-        SectorPoint points[4];
-
-        std::pair<double, double> last_intercept = std::pair<double, double>(0, 0);
-        double last_d = 1000;
-        
-        for (int cs = current_sector; cs < sectors.size(); cs++)
+        for (Sector cs : sectors)
         {
-            for (int pc = 0; pc < sectors[cs].point_count; pc++)
+            for (int w = 0; w < cs.wall_count; w++)
             {
-                SectorPoint p1 = sectors[cs].points[pc];
-                points[pc] = p1;
-                SectorPoint p2;
-                
-                if (pc + 1 < sectors[cs].point_count)
-                    p2 = sectors[cs].points[pc + 1];
-                else
-                    p2 = sectors[cs].points[0];
-                
-                double s1, s2;
+                SectorWall wall;
 
+                wall.p1.x = cs.walls[w].p1.x - cc.x;
+                wall.p1.y = cs.walls[w].p1.y - cc.y;
+
+                wall.p2.x = cs.walls[w].p2.x - cc.x;
+                wall.p2.y = cs.walls[w].p2.y - cc.y;
+
+                double wx[4], wy[4], wz[4];
+                double COS = M.cos[(int)cc.horizontal], SIN = M.sin[(int)cc.horizontal];
+
+                // World Positions
+                // X
+                wx[0] = wall.p1.x * COS - wall.p1.y * SIN;
+                wx[1] = wall.p2.x * COS - wall.p2.y * SIN;
+                // Y
+                wy[0] = wall.p1.y * COS + wall.p1.x * SIN;
+                wy[1] = wall.p2.y * COS + wall.p2.x * SIN;
+                wy[2] = wall.p1.y * COS + wall.p1.x * SIN;
+                wy[3] = wall.p2.y * COS + wall.p2.x * SIN;
+                // Z
+                wz[0] = cs.bottom - cc.z + ((cc.vertical * wy[0]) / 32.00);
+                wz[1] = cs.bottom - cc.z + ((cc.vertical * wy[1]) / 32.00);
+                wz[2] = cs.top - cc.z + ((cc.vertical * wy[2]) / 32.00);
+                wz[3] = cs.top - cc.z + ((cc.vertical * wy[3]) / 32.00);
+
+                // Screen Positions
+                // X
+                wx[0] = wx[0] * fov / wy[0] + (screen_width * resolution / 2);
+                wx[1] = wx[1] * fov / wy[1] + (screen_width * resolution / 2);
+
+                // Y
+                wy[0] = wz[0] * fov / wy[0] + (screen_height * resolution / 2);
+                wy[1] = wz[1] * fov / wy[1] + (screen_height * resolution / 2);
+                wy[2] = wz[2] * fov / wy[2] + (screen_height * resolution / 2);
+                wy[3] = wz[3] * fov / wy[3] + (screen_height * resolution / 2);
+                
+                if (wy[0] < 1 && wy[1] < 1) break;
+
+                if (wy[0] < 1)
                 {
-                    d1 = std::sqrt(pow((p1.x - (cc.x * M.tan[(int)cc.angle])), 2) + pow((p1.y - cc.y), 2));
-
-                    d2 = std::sqrt(pow((p2.x - (cc.x * M.tan[(int)cc.angle])), 2) + pow((p2.y - cc.y), 2));
-
-                    intercept1 = LineGraph(cc.x + M.cos[(int)cc.angle], cc.y - M.sin[(int)cc.angle], cc.x, cc.y, p1.x, p1.y);
-                    intercept2 = LineGraph(cc.x + M.cos[(int)cc.angle], cc.y - M.sin[(int)cc.angle], cc.x, cc.y, p2.x, p2.y);
-
-                    intercept1.first -= (cc.x * M.cos[(int)cc.angle]) - (cc.y * M.sin[(int)cc.angle]);
-                    intercept1.second += (cc.x * M.cos[(int)cc.angle]) + (cc.y * M.sin[(int)cc.angle]);
-                    
-                    intercept2.first -= (cc.x * M.cos[(int)cc.angle]) - (cc.y * M.sin[(int)cc.angle]);
-                    intercept2.second += (cc.x * M.cos[(int)cc.angle]) + (cc.y * M.sin[(int)cc.angle]);
-
-                    Clamp(intercept1.first, -fov, fov, false);
-                    Clamp(intercept1.second, -fov, fov, false);
-                    Clamp(intercept2.first, -fov, fov, false);
-                    Clamp(intercept2.second, -fov, fov, false);
-
-                    t1 = (screen_height / 2 - d1) - sectors[cs].top;
-                    t2 = (screen_height / 2 - d2) - sectors[cs].top;
-
-                    Clamp(t1, 0, (screen_height / 2), false);
-                    Clamp(t2, 0, (screen_height / 2), false);
-
-                    b1 = (-screen_height / 2 + d1) - sectors[cs].bottom;
-                    b2 = (-screen_height / 2 + d2) - sectors[cs].bottom;
-
-                    Clamp(b1, -screen_height / 2, 0, false);
-                    Clamp(b2, -screen_height / 2, 0, false);
+                    ClipBehindCamera(wx[0], wy[0], wz[0], wx[1], wy[1], wz[1]); // bottom
+                    ClipBehindCamera(wx[2], wy[2], wz[2], wx[3], wy[3], wz[3]); // top
+                }
+                
+                if (wy[1] < 1)
+                {
+                    ClipBehindCamera(wx[1], wy[1], wz[1], wx[0], wy[0], wz[0]); // bottom
+                    ClipBehindCamera(wx[3], wy[3], wz[3], wx[2], wy[2], wz[2]); // top
                 }
 
-                double adjustment;
-
-                s1 = intercept1.first * multiplier;
-                s2 = intercept2.first * multiplier;
-                adjustment = M.cos[(int)cc.angle];
-                
-                glColor3ub(0, 0, 255);
-
-                switch (pc)
+                switch (w)
                 {
                     case 0:
-                        glColor3ub(255, 0, 0);
+                        DrawWall(wx[0], wx[1], wy[0], wy[1], wy[2], wy[3], 255, 0, 0);
                         break;
                     case 1:
-                        glColor3ub(0, 0, 255);
+                        DrawWall(wx[0], wx[1], wy[0], wy[1], wy[2], wy[3], 0, 0, 255);
                         break;
                     case 2:
-                        glColor3ub(255, 255, 0);
+                        DrawWall(wx[0], wx[1], wy[0], wy[1], wy[2], wy[3], 255, 255, 0);
                         break;
                     case 3:
-                        glColor3ub(0, 255, 0);
+                        DrawWall(wx[0], wx[1], wy[0], wy[1], wy[2], wy[3], 0, 255, 0);
                         break;
                 }
-
-                glVertex2f(s1, t1 * adjustment);
-                glVertex2f(s1, b1 * adjustment);
-                glVertex2f(s2, b2 * adjustment);
-                glVertex2f(s2, t2 * adjustment);
             }
-            
-            glEnd();
-
-            UsedScreenSpace.clear();
-
-            glColor3ub(255, 255, 255);
-            glBegin(GL_POINTS);
-
-            for (int i = 0; i < sectors[cs].point_count; i++)
-                glVertex2f(points[i].x, points[i].y);
-            
-            glVertex2f(cc.x, cc.y);
-            
-            double a = cc.angle + 90;
-            Clamp(a, 0, 360);
-
-            glVertex2f(cc.x - M.cos[(int)a] * 6, cc.y + M.sin[(int)a] * 6);
-            glEnd();
         }
+    }
 
-        tick++;
+    void Window::ClipBehindCamera(double& x1, double& y1, double& z1, const double& x2, const double& y2, const double& z2)
+    {
+        float da = y1;  // distance plane a
+        float db = y2;  // distance plane b
+        float d = da - db;
+
+        Clamp(d, 1, da, false);
+
+        float s = da / d; // intersection factor
+
+        x1 += s * (x2 - (x1));
+        y1 += s * (y2 - (y1));
+        z1 += s * (z2 - (z1));
+
+        Clamp(y1, 1, y2, false);
+    }
+
+    void Window::DrawWall(double x1, double x2, double t1, double t2, double b1, double b2, int r, int g, int b)
+    {
+        // differences
+        double dyb = b2 - b1;
+        double dyt = t2 - t1;
+        dyb = RoundToInt(dyb);
+        dyt = RoundToInt(dyt);
+
+        double dx = x2 - x1;
+
+        dx = RoundToInt(dx);
+        
+        if (dx == 0) dx = 1;
+
+        int xs = RoundToInt(x1);
+
+        Clamp(x1, 1, screen_width * resolution, false);
+        Clamp(x2, 1, screen_width * resolution, false);
+
+        glColor3ub(r, g, b);
+        glBegin(GL_POINTS);
+
+        for (int x = (int)x1; x < (int)x2; x++)
+        {
+            if (x > 0 && x < screen_width * resolution)
+            {
+                int y2 = dyb * (x - xs) / dx + b1;
+                int y1 = dyt * (x - xs) / dx + t1;
+
+                y1 = RoundToInt(y1, screen_height * resolution / 2);
+                y2 = RoundToInt(y2, screen_height * resolution / 2);
+
+                Clamp(y1, 1, screen_height * resolution, false);
+                Clamp(y2, 1, screen_height * resolution, false);
+
+                for (int y = y1; y < y2; y++)
+                {
+                    // Pixel(x, y);
+                    glVertex2i(x, y);
+                }
+            }
+        }
+        glEnd();
     }
 
     void Window::Pixel(int x, int y, int r, int g, int b)
@@ -261,13 +373,16 @@ namespace Cobra
 
     bool Window::Display()
     {
+        static double rs;
+
+        rs += ElapsedTime;
+
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
         glPointSize(pixel_scale);
-
         RenderView();
 
         glfwSwapBuffers(screen);
+
         glfwPollEvents();
         
         if (!running)

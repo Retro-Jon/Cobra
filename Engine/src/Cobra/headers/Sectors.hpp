@@ -10,10 +10,16 @@ namespace Cobra
         int y;
     };
 
+    struct SectorWall
+    {
+        SectorPoint p1;
+        SectorPoint p2;
+    };
+
     struct Sector
     {
-        SectorPoint* points;
-        int point_count;
+        SectorWall* walls;
+        int wall_count;
         int top;
         int bottom;
     };

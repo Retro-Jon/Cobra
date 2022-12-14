@@ -27,7 +27,8 @@ int Move(lua_State* L)
     f.x = (double)lua_tonumber(L, 1);
     f.y = (double)lua_tonumber(L, 2);
     f.z = (double)lua_tonumber(L, 3);
-    f.angle = (double)lua_tonumber(L, 4);
+    f.horizontal = (double)lua_tonumber(L, 4);
+    f.vertical = (double)lua_tonumber(L, 5);
 
     Cobra::objects[idx]->Move(f);
 
@@ -48,7 +49,8 @@ int Push(lua_State* L)
     f.x = (double)lua_tonumber(L, 1);
     f.y = (double)lua_tonumber(L, 2);
     f.z = (double)lua_tonumber(L, 3);
-    f.angle = (double)lua_tonumber(L, 4);
+    f.horizontal = (double)lua_tonumber(L, 4);
+    f.vertical = (double)lua_tonumber(L, 5);
     
     Cobra::objects[idx]->Push(f);
 
@@ -79,7 +81,8 @@ int CreateCamera(lua_State* L)
     p.x = (double)lua_tonumber(L, 2);
     p.y = (double)lua_tonumber(L, 3);
     p.z = (double)lua_tonumber(L, 4);
-    p.angle = lua_tointeger(L, 5);
+    p.horizontal = (double)lua_tointeger(L, 5);
+    p.vertical = (double)lua_tonumber(L, 6);
 
     Cobra::window->CreateNewCamera(name, p);
 

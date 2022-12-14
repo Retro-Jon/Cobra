@@ -22,7 +22,7 @@ namespace Cobra
     Object::Object(int index)
     {
         idx = index;
-        position = (Pos){.x = 0, .y = 0, .z = 0, .angle = 0};
+        position = (Pos){.x = 0, .y = 0, .z = 0, .horizontal = 0, .vertical = 0};
         bound_camera = "";
     }
 
@@ -68,21 +68,23 @@ namespace Cobra
 
     void Object::Move(Pos direction)
     {
-        position += direction;
+        position = direction;
     }
 
     void Object::Push(Pos force)
     {
-        position.angle += force.angle;
+        position.horizontal += force.horizontal * ElapsedTime;
+        position.vertical += force.vertical * ElapsedTime;
 
-        Clamp(position.angle, 0, 360);
+        Clamp(position.horizontal, 0, 360);
+        Clamp(position.vertical, 0, 360);
 
-        double COS = M.cos[(int)position.angle];
-        double SIN = M.sin[(int)position.angle];
+        double COS = M.cos[(int)position.horizontal] * ElapsedTime;
+        double SIN = M.sin[(int)position.horizontal] * ElapsedTime;
 
         if (force.x != 0)
         {
-            if (M.tan[(int)position.angle] <= 90 || M.tan[(int)position.angle] >= 270)
+            if (M.tan[(int)position.horizontal] <= 90 || M.tan[(int)position.horizontal] >= 270)
             {
                 position.x += force.x * COS;
                 position.y -= force.x * SIN;
@@ -98,7 +100,7 @@ namespace Cobra
             position.y += force.y * COS;
         }
 
-        position.z += force.z;
+        position.z += force.z * ElapsedTime;
     }
 
     void Object::BindToCamera(std::string camera)
