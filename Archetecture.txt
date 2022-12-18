@@ -8,9 +8,15 @@ Cobra:
         - Event Handling
             - Input
             - In Game Event Triggers
-
-    Setup
-        1. Create Window
+    
+    Objects
+        - Have a script attached
+        - Can be connected to a camera
+        - Can have graphical components
+    
+    Sectors
+        - Used to build a level
+        - Static by default
 
 Runtime:
     Responsibilities
@@ -18,5 +24,9 @@ Runtime:
             - Lua scripts
     
     Setup
-        1. Load & Validate Resources
-        2. Start Cobra
+        1. Populate math arrays with precalculated function values
+        2. Create Window
+            - Use settings from "settings.lua"
+            OR
+            - Use default settings if "settings.lua" is not present.
+        3. Create main script object.
