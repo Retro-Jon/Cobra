@@ -99,30 +99,25 @@ namespace Cobra
 
     int RoundToInt(double num)
     {
-        int res;
-
         if (num - (int)num < 0.5)
-            res = (int)num;
+            return (int)num;
         else
-            res = (int)num + 1;
-        
-        return res;
+            return (int)num + 1;
     }
 
     int RoundToInt(double num, double comp)
     {
-        int res;
-
         if (num > comp)
-            res = (int)num + 1;
+            return (int)num + 1;
         else
-            res = (int)num;
-        
-        return res;
+            return (int)num;
     }
 
     double dist(double x1, double y1, double x2, double y2)
     {
-        return std::sqrt((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1));
+        double x = x2 - x1;
+        double y = y2 - y1;
+
+        return std::sqrt((x * x) + (y * y));
     }
 }

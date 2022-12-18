@@ -4,6 +4,13 @@
 
 namespace Cobra
 {
+    enum
+    {
+        Normal = 0, // External View
+        Inverted = 1, // Internal View
+        Hollow = 2 // Internal & External View
+    };
+
     struct SectorPoint
     {
         int x;
@@ -31,5 +38,8 @@ namespace Cobra
 
         Color top_color;
         Color bottom_color;
+
+        double distance;
+        int view;
     };
 }

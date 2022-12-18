@@ -259,6 +259,20 @@ namespace Cobra
         const double multiplier = screen_width / fov;
         
         Pos cc = cameras[current_camera];
+
+        // Sort Sectors
+        for (int s = 0; s < sectors.size(); s++)
+        {
+            for (int w = 0; w < sectors.size(); w++)
+            {
+                if (sectors[w].distance < sectors[w + 1].distance)
+                {
+                    Sector tmp = sectors[w];
+                    sectors[w] = sectors[w + 1];
+                    sectors[w + 1] = tmp;
+                }
+            }
+        }
         
         for (Sector cs : sectors)
         {

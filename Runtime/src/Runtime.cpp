@@ -12,12 +12,13 @@ int main()
 
     while (!main.Display())
     {
-        Cobra::CalculateElapsedTime();
-        main.SetTitle(("Cobra FPS: " + std::to_string(1 / Cobra::ElapsedTime)).c_str());
+        // main.SetTitle(("FPS: " + std::to_string(1000 / Cobra::ElapsedTime)).c_str());
         for (std::pair<int, Cobra::Object*> o : Cobra::objects)
         {
             o.second->Logic();
         }
+
+        Cobra::CalculateElapsedTime();
     }
 
     Cobra::DeleteAllObjects();
