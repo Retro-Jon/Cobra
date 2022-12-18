@@ -43,7 +43,7 @@ namespace Cobra
             void RenderView();
 
             void ClipBehindCamera(double& x1, double& y1, double& z1, const double& x2, const double& y2, const double& z2);
-            void DrawWall(double x1, double x2, double t1, double t2, double b1, double b2, int r, int g, int b);
+            void DrawWall(double x1, double x2, double t1, double t2, double b1, double b2, Color c);
             void Pixel(int x, int y, int r = 255, int g = 255, int b = 255);
             bool Display();
             void CreateWindow();

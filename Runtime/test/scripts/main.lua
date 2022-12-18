@@ -1,7 +1,7 @@
 function OnReady()
     CreateCamera("main", 0, 0, 0, 0, 0)
     BindToCamera("main")
-    Move(0, -40, 30, 0, 20)
+    Move(0, -40, 0, 0, 0)
 end
 
 x = 0

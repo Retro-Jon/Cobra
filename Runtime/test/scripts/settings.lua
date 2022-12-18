@@ -2,8 +2,8 @@ Settings = {
     Window = {
         Width = 270,
         Height = 180,
-        Resolution = 2,
-        PixelScale = 2,
+        Resolution = 4,
+        PixelScale = 4,
         Title = "Cobra Runtime"
     },
     Rendering = {

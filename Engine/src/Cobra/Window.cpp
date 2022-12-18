@@ -92,8 +92,25 @@ namespace Cobra
         current_camera = "";
         current_sector = 0;
 
+        int count = 0;
+
         for (int sx = -8; sx <= 8; sx += 8)
         {
+            Color c;
+
+            switch (count)
+            {
+                case 0:
+                    c = {.r = 255, .g = 0, .b = 0};
+                    break;
+                case 1:
+                    c = {.r = 0, .g = 255, .b = 0};
+                    break;
+                case 2:
+                    c = {.r = 0, .g = 0, .b = 255};
+                    break;
+            }
+
             Sector s;
             s.wall_count = 4;
             s.walls = new SectorWall[4];
@@ -103,9 +120,22 @@ namespace Cobra
             points[1] = (SectorPoint){.x = sx + 2, .y = -2};
             points[2] = (SectorPoint){.x = sx + 2, .y = 2};
             points[3] = (SectorPoint){.x = sx + -2, .y = 2};
+
+            bool shaded = false;
             
             for (int w = 0; w < s.wall_count; w++)
             {
+                s.walls[w].wall_color = c;
+
+                if (shaded)
+                    s.walls[w].wall_color = {.r = c.r - 100, .g = c.g - 100, .b = c.b - 100};
+                
+                Clamp(s.walls[w].wall_color.r, 0, 255, false);
+                Clamp(s.walls[w].wall_color.g, 0, 255, false);
+                Clamp(s.walls[w].wall_color.b, 0, 255, false);
+                
+                shaded = !shaded;
+
                 s.walls[w].p1 = points[w];
 
                 if (w +1 < s.wall_count)
@@ -118,6 +148,9 @@ namespace Cobra
             s.bottom = 0;
 
             sectors.push_back(s);
+
+            count++;
+            if (count > 2) count = 0;
         }
 
         CreateWindow();
@@ -239,6 +272,8 @@ namespace Cobra
                 wall.p2.x = cs.walls[w].p2.x - cc.x;
                 wall.p2.y = cs.walls[w].p2.y - cc.y;
 
+                wall.wall_color = cs.walls[w].wall_color;
+
                 double wx[4], wy[4], wz[4];
                 double COS = M.cos[(int)cc.horizontal], SIN = M.sin[(int)cc.horizontal];
 
@@ -282,21 +317,7 @@ namespace Cobra
                     ClipBehindCamera(wx[3], wy[3], wz[3], wx[2], wy[2], wz[2]); // top
                 }
 
-                switch (w)
-                {
-                    case 0:
-                        DrawWall(wx[0], wx[1], wy[0], wy[1], wy[2], wy[3], 255, 0, 0);
-                        break;
-                    case 1:
-                        DrawWall(wx[0], wx[1], wy[0], wy[1], wy[2], wy[3], 0, 0, 255);
-                        break;
-                    case 2:
-                        DrawWall(wx[0], wx[1], wy[0], wy[1], wy[2], wy[3], 255, 255, 0);
-                        break;
-                    case 3:
-                        DrawWall(wx[0], wx[1], wy[0], wy[1], wy[2], wy[3], 0, 255, 0);
-                        break;
-                }
+                DrawWall(wx[0], wx[1], wy[0], wy[1], wy[2], wy[3], wall.wall_color);
             }
         }
     }
@@ -318,7 +339,7 @@ namespace Cobra
         Clamp(y1, 1, y2, false);
     }
 
-    void Window::DrawWall(double x1, double x2, double t1, double t2, double b1, double b2, int r, int g, int b)
+    void Window::DrawWall(double x1, double x2, double t1, double t2, double b1, double b2, Color c)
     {
         // differences
         double dyb = b2 - b1;
@@ -337,7 +358,7 @@ namespace Cobra
         Clamp(x1, 1, screen_width * resolution, false);
         Clamp(x2, 1, screen_width * resolution, false);
 
-        glColor3ub(r, g, b);
+        glColor3ub(c.r, c.g, c.b);
         glBegin(GL_POINTS);
 
         for (int x = (int)x1; x < (int)x2; x++)

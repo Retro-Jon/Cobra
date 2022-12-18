@@ -10,10 +10,16 @@ namespace Cobra
         int y;
     };
 
+    struct Color
+    {
+        int r, g, b;
+    };
+
     struct SectorWall
     {
         SectorPoint p1;
         SectorPoint p2;
+        Color wall_color;
     };
 
     struct Sector
@@ -22,5 +28,8 @@ namespace Cobra
         int wall_count;
         int top;
         int bottom;
+
+        Color top_color;
+        Color bottom_color;
     };
 }
