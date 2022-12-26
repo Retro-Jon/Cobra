@@ -10,7 +10,7 @@ z = 0
 h = 0
 v = 0
 
-move_speed = 30
+move_speed = 15
 look_speed = 30
 
 function KeyInput(key, action)

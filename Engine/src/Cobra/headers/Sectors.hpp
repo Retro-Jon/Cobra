@@ -41,5 +41,8 @@ namespace Cobra
 
         double distance;
         int view;
+
+        int surface;
+        int* surf_points;
     };
 }

@@ -10,6 +10,6 @@ RUNTIME_INCLUDES = -I"Engine/"
 RUNTIME_LIBS = Runtime/test/Cobra.dll Engine/bin/lua54.dll
 
 main:
-	$(CC) -std=c++17 $(COBRA_SRCS) -shared $(COBRA_INCLUDES) -o Engine/bin/Cobra.dll $(COBRA_LIBS)
+	$(CC) -std=c++17 $(COBRA_SRCS) -shared $(COBRA_INCLUDES) -o Engine/bin/Cobra.dll $(COBRA_LIBS) -O3
 	copy Engine\bin\Cobra.dll Runtime\test\Cobra.dll
-	$(CC) $(RUNTIME_SRCS) $(RUNTIME_INCLUDES) -o Runtime/test/Runtime.exe $(RUNTIME_LIBS) $(COBRA_LIBS)
+	$(CC) $(RUNTIME_SRCS) $(RUNTIME_INCLUDES) -o Runtime/test/Runtime.exe $(RUNTIME_LIBS) $(COBRA_LIBS) -O3

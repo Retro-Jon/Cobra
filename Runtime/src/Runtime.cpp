@@ -4,15 +4,14 @@
 int main()
 {
     Cobra::PopulateMath();
-    Cobra::Window main("settings.lua");
+    Cobra::window = new Cobra::Window("settings.lua");
     
     Cobra::CreateObject("main.lua");
 
     Cobra::CalculateElapsedTime();
 
-    while (!main.Display())
+    while (!Cobra::window->Display())
     {
-        // main.SetTitle(("FPS: " + std::to_string(1000 / Cobra::ElapsedTime)).c_str());
         for (std::pair<int, Cobra::Object*> o : Cobra::objects)
         {
             o.second->Logic();
