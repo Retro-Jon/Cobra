@@ -41,29 +41,52 @@ namespace Cobra
             LuaRegisterFunctions(script);
 
             lua_getglobal(script, "OnReady");
-            CheckLua(script, lua_pcall(script, 0, 0, 0), "OnReady");
+
+            if (lua_isfunction(script, 1))
+                CheckLua(script, lua_pcall(script, 0, 0, 0), "OnReady");
         }
     }
 
     Object::~Object()
     {
         lua_getglobal(script, "OnDelete");
-        CheckLua(script, lua_pcall(script, 0, 0, 0), "OnDelete");
+        
+        if (lua_isfunction(script, 1))
+            CheckLua(script, lua_pcall(script, 0, 0, 0), "OnDelete");
+        
         lua_close(script);
     }
 
     void Object::KeyInput(int key, int action)
     {
         lua_getglobal(script, "KeyInput");
-        lua_pushnumber(script, key);
-        lua_pushnumber(script, action);
-        CheckLua(script, lua_pcall(script, 2, 0, 0), "KeyInput");
+
+        if (lua_isfunction(script, 1))
+        {
+            lua_pushnumber(script, key);
+            lua_pushnumber(script, action);
+
+            CheckLua(script, lua_pcall(script, 2, 0, 0), "kKeyInput");
+        }
     }
 
     void Object::Logic()
     {
         lua_getglobal(script, "Logic");
-        CheckLua(script, lua_pcall(script, 0, 0, 0), "Logic");
+
+        if (lua_isfunction(script, 1))
+            CheckLua(script, lua_pcall(script, 0, 0, 0), "Logic");
+    }
+
+    void Object::Event(std::string e)
+    {
+        lua_getglobal(script, "Event");
+        
+        if (lua_isfunction(script, 1))
+        {
+            lua_pushstring(script, e.c_str());
+            CheckLua(script, lua_pcall(script, 1, 0, 0), "Event");
+        }
     }
 
     void Object::Move(Pos direction)

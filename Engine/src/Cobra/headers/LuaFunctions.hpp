@@ -11,8 +11,11 @@ int Quit(lua_State* L);
 int Move(lua_State* L);
 int Push(lua_State* L);
 int BindToCamera(lua_State* L);
+int TriggerEvent(lua_State* L);
 
 int CreateCamera(lua_State* L);
+
+int CreateObject(lua_State* L);
 
 void LuaRegisterFunctions(lua_State* L)
 {
@@ -21,6 +24,9 @@ void LuaRegisterFunctions(lua_State* L)
     lua_register(L, "Move", Move);
     lua_register(L, "Push", Push);
     lua_register(L, "BindToCamera", BindToCamera);
+    lua_register(L, "TriggerEvent", TriggerEvent);
     
     lua_register(L, "CreateCamera", CreateCamera);
+
+    lua_register(L, "CreateObject", CreateObject);
 }

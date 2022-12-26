@@ -30,6 +30,7 @@ namespace Cobra
             //lua functions
             void KeyInput(int key, int action);
             void Logic();
+            void Event(std::string e);
 
             // lua and C++
             void Move(Pos direction);
@@ -44,9 +45,9 @@ namespace Cobra
 
     static int CreateObject(std::string ScriptPath = "")
     {
+        next_object_id++;
         objects.insert(std::pair<int, Object*>(next_object_id, new Object(next_object_id)));
         objects[next_object_id]->Ready("scripts/" + ScriptPath);
-        next_object_id++;
         return objects.size();
     }
 

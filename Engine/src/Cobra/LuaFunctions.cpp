@@ -73,6 +73,17 @@ int BindToCamera(lua_State* L)
     return 0;
 }
 
+int TriggerEvent(lua_State* L)
+{
+    std::string e = lua_tostring(L, 1);
+
+    for (std::pair<int, Cobra::Object*> o : Cobra::objects)
+    {
+        o.second->Event(e);
+    }
+    return 0;
+}
+
 int CreateCamera(lua_State* L)
 {
     std::string name = lua_tostring(L, 1);
@@ -86,5 +97,12 @@ int CreateCamera(lua_State* L)
 
     Cobra::window->CreateNewCamera(name, p);
 
+    return 0;
+}
+
+int CreateObject(lua_State* L)
+{
+    std::string name = lua_tostring(L, 1);
+    Cobra::CreateObject(name);
     return 0;
 }
