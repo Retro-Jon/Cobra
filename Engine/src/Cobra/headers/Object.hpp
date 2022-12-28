@@ -18,6 +18,7 @@ namespace Cobra
             Pos position;
             int idx;
             std::string bound_camera;
+            std::map<std::string, bool> script_functions;
         
         protected:
             lua_State* script;
@@ -26,6 +27,8 @@ namespace Cobra
             Object(int index = -1);
             void Ready(std::string ScriptPath = "");
             ~Object();
+
+            bool has_function(std::string name);
 
             //lua functions
             void KeyInput(int key, int action);

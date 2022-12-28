@@ -1,7 +1,11 @@
+Properties = {
+    UseTransformation = true
+}
+
 function OnReady()
     CreateCamera("player_view", 0, 0, 0, 0, 0)
     BindToCamera("player_view")
-    Move(0, -40, 0, 0, 0)
+    Move(0, -40, 0, 0, 90)
 end
 
 x = 0
@@ -69,8 +73,8 @@ function KeyInput(key, action)
         end
 
         if(key == 32) then -- SPACE
-            Move(0, -40, 0, 0, 0);
-            TriggerEvent("Yay")
+            Move(0, -40, 0, 0, 90)
+            TriggerEvent("Reset")
             --print("Reset")
         end
 

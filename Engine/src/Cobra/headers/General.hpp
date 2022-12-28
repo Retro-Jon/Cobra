@@ -124,6 +124,18 @@ namespace Cobra
         return res;
     }
 
+    static const bool LuaGetTableBoolValue(lua_State* L, const char* key)
+    {
+        bool res;
+        lua_pushstring(L, key);
+        lua_gettable(L, -2);
+
+        res = lua_toboolean(L, -1);
+        
+        lua_pop(L, 1);
+        return res;
+    }
+
     struct Pos
     {
         double x;

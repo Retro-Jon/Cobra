@@ -4,12 +4,9 @@ function OnReady()
 end
 
 function Event(e)
-end
-
-function KeyInput(key, action)
-end
-
-function Logic()
+    if(e == "Reset") then
+        print("Player has been reset.")
+    end
 end
 
 function OnDelete()

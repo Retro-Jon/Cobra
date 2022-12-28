@@ -31,7 +31,6 @@ namespace Cobra
         if (ScriptPath != "")
         {
             script = luaL_newstate();
-
             lua_pushnumber(script, idx);
             lua_setglobal(script, "InstanceID");
 
@@ -39,11 +38,34 @@ namespace Cobra
 
             luaL_openlibs(script);
             LuaRegisterFunctions(script);
+            
+            std::string funcs[] = {"OnReady", "KeyInput", "Logic", "Event"};
 
-            lua_getglobal(script, "OnReady");
+            std::cout << ScriptPath << std::endl;
 
-            if (lua_isfunction(script, 1))
-                CheckLua(script, lua_pcall(script, 0, 0, 0), "OnReady");
+            for (std::string f : funcs)
+            {
+                lua_getglobal(script, f.c_str());
+
+                script_functions[f] = false;
+
+                if (lua_isfunction(script, 1))
+                    script_functions[f] = true;
+                
+                lua_pop(script, 1);
+
+                std::cout << f << " : " << script_functions[f] << std::endl;
+            }
+
+            std::cout << std::endl;
+
+            if (has_function("OnReady"))
+            {
+                lua_getglobal(script, "OnReady");
+
+                if (lua_isfunction(script, 1))
+                    CheckLua(script, lua_pcall(script, 0, 0, 0), "OnReady");
+            }
         }
     }
 
@@ -57,35 +79,49 @@ namespace Cobra
         lua_close(script);
     }
 
+    bool Object::has_function(std::string name)
+    {
+        return script_functions[name];
+    }
+
     void Object::KeyInput(int key, int action)
     {
-        lua_getglobal(script, "KeyInput");
-
-        if (lua_isfunction(script, 1))
+        if (has_function("KeyInput"))
         {
-            lua_pushnumber(script, key);
-            lua_pushnumber(script, action);
+            lua_getglobal(script, "KeyInput");
 
-            CheckLua(script, lua_pcall(script, 2, 0, 0), "kKeyInput");
+            if (lua_isfunction(script, 1))
+            {
+                lua_pushnumber(script, key);
+                lua_pushnumber(script, action);
+
+                CheckLua(script, lua_pcall(script, 2, 0, 0), "kKeyInput");
+            }
         }
     }
 
     void Object::Logic()
     {
-        lua_getglobal(script, "Logic");
+        if (has_function("Logic"))
+        {
+            lua_getglobal(script, "Logic");
 
-        if (lua_isfunction(script, 1))
-            CheckLua(script, lua_pcall(script, 0, 0, 0), "Logic");
+            if (lua_isfunction(script, 1))
+                CheckLua(script, lua_pcall(script, 0, 0, 0), "Logic");
+        }
     }
 
     void Object::Event(std::string e)
     {
-        lua_getglobal(script, "Event");
-        
-        if (lua_isfunction(script, 1))
+        if (has_function("Event"))
         {
-            lua_pushstring(script, e.c_str());
-            CheckLua(script, lua_pcall(script, 1, 0, 0), "Event");
+            lua_getglobal(script, "Event");
+            
+            if (lua_isfunction(script, 1))
+            {
+                lua_pushstring(script, e.c_str());
+                CheckLua(script, lua_pcall(script, 1, 0, 0), "Event");
+            }
         }
     }
 

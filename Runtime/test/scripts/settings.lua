@@ -4,7 +4,7 @@ Settings = {
         Height = 480,
         Resolution = 1,
         PixelScale = 1,
-        Title = "Cobra Runtime"
+        Title = "Cobra Test"
     },
     Rendering = {
         Fov = 200,

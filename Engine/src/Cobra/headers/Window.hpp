@@ -43,6 +43,7 @@ namespace Cobra
             void CreateNewCamera(std::string name, Pos position = (Pos){.x = 0, .y = 0, .z = 0, .horizontal = 0, .vertical = 0});
             int GetCameraCount();
 
+            void BubbleSortSectors(double z);
             void RenderView();
 
             void ClipBehindCamera(double& x1, double& y1, double& z1, const double& x2, const double& y2, const double& z2);
@@ -52,6 +53,7 @@ namespace Cobra
             void CreateWindow();
             void SetTitle(const char* Title);
             void SetSize(int width, int height);
+            void ResetSize();
             void End();
             GLFWwindow* GetScreen() const;
     };
