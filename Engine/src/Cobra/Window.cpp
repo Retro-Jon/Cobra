@@ -97,7 +97,7 @@ namespace Cobra
 
         int count = 0;
 
-        for (int sx = -8; sx <= 8; sx += 8)
+        for (int sx = -16; sx <= 16; sx += 16)
         {
             Color c;
 
@@ -119,10 +119,10 @@ namespace Cobra
             s.walls = new SectorWall[s.wall_count];
             SectorPoint points[4];
 
-            points[0] = (SectorPoint){.x = sx + -2, .y = -2};
-            points[1] = (SectorPoint){.x = sx + 2, .y = -2};
-            points[2] = (SectorPoint){.x = sx + 2, .y = 2};
-            points[3] = (SectorPoint){.x = sx + -2, .y = 2};
+            points[0] = (SectorPoint){.x = sx + -4, .y = -4};
+            points[1] = (SectorPoint){.x = sx + 4, .y = -4};
+            points[2] = (SectorPoint){.x = sx + 4, .y = 4};
+            points[3] = (SectorPoint){.x = sx + -4, .y = 4};
 
             bool shaded = false;
             
@@ -164,9 +164,11 @@ namespace Cobra
             if (count > 2) count = 0;
         }
 
+        sectors[1].view = Hollow;
+
         Sector room;
 
-        room.bottom = -2;
+        room.bottom = -10;
         room.top = 0;
         room.top_color = {.r = 200, .g = 200, .b = 200};
         room.bottom_color = {.r = 100, .g = 100, .b = 100};
@@ -175,10 +177,10 @@ namespace Cobra
         room.walls = new SectorWall[room.wall_count];
         SectorPoint points[room.wall_count];
 
-        points[0] = (SectorPoint){.x = -10, .y = -10};
-        points[1] = (SectorPoint){.x = 10, .y = -10};
-        points[2] = (SectorPoint){.x = 10, .y = 10};
-        points[3] = (SectorPoint){.x = -10, .y = 10};
+        points[0] = (SectorPoint){.x = -20, .y = -20};
+        points[1] = (SectorPoint){.x = 20, .y = -20};
+        points[2] = (SectorPoint){.x = 20, .y = 20};
+        points[3] = (SectorPoint){.x = -20, .y = 20};
 
         bool shaded = false;
 
@@ -404,11 +406,21 @@ namespace Cobra
 
                         // swap surface
 
-                        if (loop == 0)
+                        if (cs.view != Inverted)
                         {
-                            SectorPoint swp = wall.p1;
-                            wall.p1 = wall.p2;
-                            wall.p2 = swp;
+                            if (loop == 0)
+                            {
+                                SectorPoint swp = wall.p1;
+                                wall.p1 = wall.p2;
+                                wall.p2 = swp;
+                            }
+                        } else {
+                            if (loop == 1)
+                            {
+                                SectorPoint swp = wall.p1;
+                                wall.p1 = wall.p2;
+                                wall.p2 = swp;
+                            }
                         }
 
                         // World Positions
@@ -454,7 +466,7 @@ namespace Cobra
                             ClipBehindCamera(wx[3], wy[3], wz[3], wx[2], wy[2], wz[2]); // top
                         }
                         
-                        DrawWall(wx[0], wx[1], wy[0], wy[1], wy[2], wy[3], sectors[index].surface, cs.surf_points, wall.wall_color, cs.top_color, cs.bottom_color);
+                        DrawWall(wx[0], wx[1], wy[0], wy[1], wy[2], wy[3], sectors[index].surface, cs.surf_points, cs.view, wall.wall_color, cs.top_color, cs.bottom_color);
                     }
                     sectors[index].surface *= -1;
                 }
@@ -477,7 +489,7 @@ namespace Cobra
         z1 += s * (z2 - (z1));
     }
 
-    void Window::DrawWall(double x1, double x2, double t1, double t2, double b1, double b2, int surface, int* points, Color wc, Color tc, Color bc)
+    void Window::DrawWall(double x1, double x2, double t1, double t2, double b1, double b2, int surface, int* points, int view, Color wc, Color tc, Color bc)
     {
         // differences
         double dyb = b2 - b1;
@@ -487,12 +499,14 @@ namespace Cobra
 
         if (dx == 0) dx = 1;
 
-        Clamp(x1, 1, screen_width, false);
-        Clamp(x2, 1, screen_width, false);
-
         glBegin(GL_POINTS);
         
         int xs = (int)x1, xf = (int)x2;
+
+        if (x1 < 1) x1 = 1;
+        if (x2 < 1) x2 = 1;
+        if (x1 > screen_width - 1) x1 = screen_width - 1;
+        if (x2 > screen_width - 1) x2 = screen_width - 1;
 
         for (int x = xs; x < xf; x++)
         {
@@ -501,33 +515,36 @@ namespace Cobra
                 int y2 = dyb * (x - xs) / dx + b1;
                 int y1 = dyt * (x - xs) / dx + t1;
 
-                Clamp(y1, 1, screen_height, false);
-                Clamp(y2, 1, screen_height, false);
-
                 // Surface
 
                 // Save
-                if (surface == 1)           // Bottom
+                if (view != Hollow)
                 {
-                    points[x] = y1;
-                    continue;
-                } else if (surface == 2)    // Top
-                {
-                    points[x] = y2;
-                    continue;
+                    if (surface == 1)           // Bottom
+                    {
+                        points[x] = y1;
+                        continue;
+                    } else if (surface == 2)    // Top
+                    {
+                        points[x] = y2;
+                        continue;
+                    }
                 }
                 
                 // Draw
-                if (surface == -1)          // Bottom
+                if (view != Hollow)
                 {
-                    glColor3ub(bc.r, bc.g, bc.b);
-                    for (int y = points[x]; y < y1; y++)
-                        glVertex2i(x, y);
-                } else if (surface == -2)   // Top
-                {
-                    glColor3ub(tc.r, tc.g, tc.b);
-                    for (int y = y2; y < points[x]; y++)
-                        glVertex2i(x, y);
+                    if (surface == -1)          // Bottom
+                    {
+                        glColor3ub(bc.r, bc.g, bc.b);
+                        for (int y = points[x]; y < y1; y++)
+                            glVertex2i(x, y);
+                    } else if (surface == -2)   // Top
+                    {
+                        glColor3ub(tc.r, tc.g, tc.b);
+                        for (int y = y2; y < points[x]; y++)
+                            glVertex2i(x, y);
+                    }
                 }
 
                 // Normal Wall

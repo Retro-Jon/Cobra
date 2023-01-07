@@ -1,0 +1,3 @@
+#Compilation
+Compiled using mingw-w64 32bit
+Check if your mingw installation has the i686-w64-mingw32-g++ executable in the din directory.

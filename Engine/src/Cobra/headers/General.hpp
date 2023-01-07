@@ -5,7 +5,7 @@
 #include <cmath>
 #include <ostream>
 #include <iostream>
-#include "../../lua/include/lua.hpp"
+#include <lua/include/lua.hpp>
 #include <type_traits>
 
 namespace Cobra
