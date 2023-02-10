@@ -1,3 +1,3 @@
 cd Runtime\test
-Runtime.exe
+"C:\Program Files (x86)\mingw32\bin\gdb.exe" Runtime.exe
 cd ..\..

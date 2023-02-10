@@ -1,13 +1,13 @@
 Settings = {
     Window = {
-        Width = 270,
-        Height = 180,
+        Width = 1080,
+        Height = 720,
         Resolution = 1,
         PixelScale = 1,
         Title = "Cobra Test"
     },
     Rendering = {
-        Fov = 200,
+        Fov = 300,
         FPS = 60
     }
 }

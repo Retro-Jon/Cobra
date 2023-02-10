@@ -1,4 +1,6 @@
 #include "headers/General.hpp"
+#include "headers/Object.hpp"
+#include "headers/Window.hpp"
 #include <iostream>
 #include <chrono>
 
@@ -81,6 +83,12 @@ namespace Cobra
         return o;
     }
 
+    std::ostream& operator << (std::ostream& o, const SectorWall& w)
+    {
+        o << "X1: " << w.p1.x << " Y1: " << w.p1.y << " X2: " << w.p2.x << " Y2: " << w.p2.y;
+        return o;
+    }
+
     double ElapsedTime;
 
     void CalculateElapsedTime()
@@ -119,5 +127,22 @@ namespace Cobra
         double y = y2 - y1;
 
         return std::sqrt((x * x) + (y * y));
+    }
+
+    void Log(const char* message)
+    {
+        std::cout << "Cobra Log " << message << std::endl;
+    }
+
+    void ERROR(const char* message)
+    {
+        std::cerr << "Cobra ERROR " << message << std::endl;
+        Exit();
+    }
+
+    void Exit()
+    {
+        Cobra::DeleteAllObjects();
+        glfwSetWindowShouldClose(Cobra::window->GetScreen(), GL_TRUE);
     }
 }

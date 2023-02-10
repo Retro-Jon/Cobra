@@ -9,6 +9,7 @@
 #include <map>
 #include <string>
 #include <iostream>
+#include <queue>
 
 namespace Cobra
 {
@@ -19,6 +20,7 @@ namespace Cobra
             int idx;
             std::string bound_camera;
             std::map<std::string, bool> script_functions;
+            bool queued;
         
         protected:
             lua_State* script;
@@ -27,6 +29,7 @@ namespace Cobra
             Object(int index = -1);
             void Ready(std::string ScriptPath = "");
             ~Object();
+            void Delete();
 
             bool has_function(std::string name);
 
@@ -44,6 +47,7 @@ namespace Cobra
     };
 
     COBRA_API extern std::map<int, Object*> objects;
+    COBRA_API extern std::queue<Object*> DeletionQueue;
     COBRA_API extern int next_object_id;
 
     static int CreateObject(std::string ScriptPath = "")
@@ -56,16 +60,15 @@ namespace Cobra
 
     static void DeleteObject(int index)
     {
-        delete objects[index];
-        objects.erase(index);
+        objects[index]->Delete();
     }
 
     static void DeleteAllObjects()
     {
         for (std::pair<int, Object*> o : objects)
         {
-            delete o.second;
+            std::cout << o.first << " : " << o.second << std::endl;
+            DeleteObject(o.first);
         }
-        objects.clear();
     }
 }

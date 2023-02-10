@@ -2,11 +2,14 @@
 
 #include "Core.hpp"
 #define _USE_MATH_DEFINES
+#define LUA_USE_APICHECK
 #include <cmath>
 #include <ostream>
 #include <iostream>
 #include <lua/include/lua.hpp>
 #include <type_traits>
+
+#include "Sectors.hpp"
 
 namespace Cobra
 {
@@ -154,4 +157,9 @@ namespace Cobra
     bool operator != (const Pos& a, const Pos& b);
 
     std::ostream& operator << (std::ostream& o, const Pos& p);
+    std::ostream& operator << (std::ostream& o, const SectorWall& w);
+
+    void Log(const char* message);
+    void ERROR(const char* message);
+    void Exit();
 }

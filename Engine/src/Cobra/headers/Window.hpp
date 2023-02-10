@@ -42,6 +42,10 @@ namespace Cobra
             void PushCamera(std::string name = "", Pos force = (Pos){.x = 0, .y = 0, .z = 0, .horizontal = 0, .vertical = 0});
             void CreateNewCamera(std::string name, Pos position = (Pos){.x = 0, .y = 0, .z = 0, .horizontal = 0, .vertical = 0});
             int GetCameraCount();
+            
+            int GetWidth();
+            int GetHeight();
+            int GetResolution();
 
             void BubbleSortSectors(double z);
             void RenderView();

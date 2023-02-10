@@ -1,11 +1,37 @@
 #include "headers/Object.hpp"
 #include <iostream>
+#include <thread>
 
 void LuaRegisterFunctions(lua_State* L);
+
+void dumpstack (lua_State *L) {
+  int top=lua_gettop(L);
+  for (int i=1; i <= top; i++) {
+    printf("%d\t%s\t", i, luaL_typename(L,i));
+    switch (lua_type(L, i)) {
+      case LUA_TNUMBER:
+        printf("%g\n",lua_tonumber(L,i));
+        break;
+      case LUA_TSTRING:
+        printf("%s\n",lua_tostring(L,i));
+        break;
+      case LUA_TBOOLEAN:
+        printf("%s\n", (lua_toboolean(L, i) ? "true" : "false"));
+        break;
+      case LUA_TNIL:
+        printf("%s\n", "nil");
+        break;
+      default:
+        printf("%p\n",lua_topointer(L,i));
+        break;
+    }
+  }
+}
 
 namespace Cobra
 {
     std::map<int, Object*> objects;
+    std::queue<Object*> DeletionQueue;
     int next_object_id = 0;
 
     bool CheckLua(lua_State* L, int r, const char* function_name)
@@ -24,10 +50,13 @@ namespace Cobra
         idx = index;
         position = (Pos){.x = 0, .y = 0, .z = 0, .horizontal = 0, .vertical = 0};
         bound_camera = "";
+        queued = false;
     }
 
     void Object::Ready(std::string ScriptPath)
     {
+        if (queued) return;
+        
         if (ScriptPath != "")
         {
             script = luaL_newstate();
@@ -65,18 +94,31 @@ namespace Cobra
 
                 if (lua_isfunction(script, 1))
                     CheckLua(script, lua_pcall(script, 0, 0, 0), "OnReady");
+                else
+                    lua_pop(script, 1);
             }
         }
     }
 
     Object::~Object()
     {
+        lua_close(script);
+    }
+
+    void Object::Delete()
+    {
+        if (queued) return;
+
+        queued = true;
+        
         lua_getglobal(script, "OnDelete");
         
         if (lua_isfunction(script, 1))
             CheckLua(script, lua_pcall(script, 0, 0, 0), "OnDelete");
-        
-        lua_close(script);
+        else
+            lua_pop(script, 1);
+
+        DeletionQueue.push(this);
     }
 
     bool Object::has_function(std::string name)
@@ -86,6 +128,8 @@ namespace Cobra
 
     void Object::KeyInput(int key, int action)
     {
+        if (queued) return;
+
         if (has_function("KeyInput"))
         {
             lua_getglobal(script, "KeyInput");
@@ -95,13 +139,16 @@ namespace Cobra
                 lua_pushnumber(script, key);
                 lua_pushnumber(script, action);
 
-                CheckLua(script, lua_pcall(script, 2, 0, 0), "kKeyInput");
-            }
+                CheckLua(script, lua_pcall(script, 2, 0, 0), "KeyInput");
+            } else
+                lua_pop(script, 1);
         }
     }
 
     void Object::Logic()
     {
+        if (queued) return;
+
         if (has_function("Logic"))
         {
             lua_getglobal(script, "Logic");
@@ -113,6 +160,8 @@ namespace Cobra
 
     void Object::Event(std::string e)
     {
+        if (queued) return;
+
         if (has_function("Event"))
         {
             lua_getglobal(script, "Event");
@@ -120,18 +169,27 @@ namespace Cobra
             if (lua_isfunction(script, 1))
             {
                 lua_pushstring(script, e.c_str());
-                CheckLua(script, lua_pcall(script, 1, 0, 0), "Event");
+                
+                if (script != nullptr)
+                {
+                    int r = lua_pcall(script, 1, 0, 0);
+                    CheckLua(script, r, "Event");
+                }
             }
         }
     }
 
     void Object::Move(Pos direction)
     {
+        if (queued) return;
+
         position = direction;
     }
 
     void Object::Push(Pos force)
     {
+        if (queued) return;
+
         position.horizontal += force.horizontal * ElapsedTime;
         position.vertical += force.vertical * ElapsedTime;
 
@@ -164,6 +222,8 @@ namespace Cobra
 
     void Object::BindToCamera(std::string camera)
     {
+        if (queued) return;
+
         bound_camera = camera;
     }
 

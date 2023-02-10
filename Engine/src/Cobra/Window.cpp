@@ -1,32 +1,9 @@
 #include "headers/Window.hpp"
 #include "headers/Object.hpp"
 #include "headers/General.hpp"
+#include "headers/AssetLoader.hpp"
 
 #include <algorithm>
-
-void dumpstack (lua_State *L) {
-  int top=lua_gettop(L);
-  for (int i=1; i <= top; i++) {
-    printf("%d\t%s\t", i, luaL_typename(L,i));
-    switch (lua_type(L, i)) {
-      case LUA_TNUMBER:
-        printf("%g\n",lua_tonumber(L,i));
-        break;
-      case LUA_TSTRING:
-        printf("%s\n",lua_tostring(L,i));
-        break;
-      case LUA_TBOOLEAN:
-        printf("%s\n", (lua_toboolean(L, i) ? "true" : "false"));
-        break;
-      case LUA_TNIL:
-        printf("%s\n", "nil");
-        break;
-      default:
-        printf("%p\n",lua_topointer(L,i));
-        break;
-    }
-  }
-}
 
 namespace Cobra
 {
@@ -43,9 +20,10 @@ namespace Cobra
             lua_State* settings = luaL_newstate();
 
             luaL_dofile(settings, ("scripts/" + ScriptPath).c_str());
-            
+
             lua_getglobal(settings, "Settings");
             lua_pushstring(settings, "Window");
+
             lua_gettable(settings, -2);
 
             w = LuaGetTableNumberValue<int>(settings, "Width");
@@ -95,121 +73,7 @@ namespace Cobra
         current_camera = "";
         current_sector = 0;
 
-        int count = 0;
-
-        for (int sx = -16; sx <= 16; sx += 16)
-        {
-            Color c;
-
-            switch (count)
-            {
-                case 0:
-                    c = {.r = 255, .g = 0, .b = 0};
-                    break;
-                case 1:
-                    c = {.r = 0, .g = 255, .b = 0};
-                    break;
-                case 2:
-                    c = {.r = 0, .g = 0, .b = 255};
-                    break;
-            }
-
-            Sector s;
-            s.wall_count = 4;
-            s.walls = new SectorWall[s.wall_count];
-            SectorPoint points[4];
-
-            points[0] = (SectorPoint){.x = sx + -4, .y = -4};
-            points[1] = (SectorPoint){.x = sx + 4, .y = -4};
-            points[2] = (SectorPoint){.x = sx + 4, .y = 4};
-            points[3] = (SectorPoint){.x = sx + -4, .y = 4};
-
-            bool shaded = false;
-            
-            for (int w = 0; w < s.wall_count; w++)
-            {
-                s.walls[w].wall_color = c;
-
-                if (shaded)
-                    s.walls[w].wall_color = {.r = c.r - 100, .g = c.g - 100, .b = c.b - 100};
-                
-                Clamp(s.walls[w].wall_color.r, 0, 255, false);
-                Clamp(s.walls[w].wall_color.g, 0, 255, false);
-                Clamp(s.walls[w].wall_color.b, 0, 255, false);
-                
-                shaded = !shaded;
-
-                s.walls[w].p1 = points[w];
-
-                if (w + 1 < s.wall_count)
-                    s.walls[w].p2 = points[w + 1];
-                else
-                    s.walls[w].p2 = points[0];
-            }
-
-            s.top = 2;
-            s.bottom = 0;
-
-            s.top_color = {.r = 0, .g = 255, .b = 255};
-            s.bottom_color = {.r = 255, .g = 255, .b = 0};
-
-            s.surf_points = new int[screen_width * resolution];
-
-            s.view = Normal;
-
-            sectors.push_back(s);
-            sector_order.push_back(sectors.size() - 1);
-
-            count++;
-            if (count > 2) count = 0;
-        }
-
-        sectors[1].view = Hollow;
-
-        Sector room;
-
-        room.bottom = -10;
-        room.top = 0;
-        room.top_color = {.r = 200, .g = 200, .b = 200};
-        room.bottom_color = {.r = 100, .g = 100, .b = 100};
-
-        room.wall_count = 4;
-        room.walls = new SectorWall[room.wall_count];
-        SectorPoint points[room.wall_count];
-
-        points[0] = (SectorPoint){.x = -20, .y = -20};
-        points[1] = (SectorPoint){.x = 20, .y = -20};
-        points[2] = (SectorPoint){.x = 20, .y = 20};
-        points[3] = (SectorPoint){.x = -20, .y = 20};
-
-        bool shaded = false;
-
-        Color c = {.r = 150, .g = 150,. b = 150};
-            
-        for (int w = 0; w < room.wall_count; w++)
-        {
-            room.walls[w].wall_color = c;
-
-            if (shaded)
-                room.walls[w].wall_color = {.r = c.r - 100, .g = c.g - 100, .b = c.b - 100};
-            
-            Clamp(room.walls[w].wall_color.r, 0, 255, false);
-            Clamp(room.walls[w].wall_color.g, 0, 255, false);
-            Clamp(room.walls[w].wall_color.b, 0, 255, false);
-            
-            shaded = !shaded;
-
-            room.walls[w].p1 = points[w];
-
-            if (w + 1 < room.wall_count)
-                room.walls[w].p2 = points[w + 1];
-            else
-                room.walls[w].p2 = points[0];
-        }
-
-        room.view = Inverted;
-
-        sectors.push_back(room);
+        sectors.push_back(assetloader->LoadSector("level.sect"));
         sector_order.push_back(sectors.size() - 1);
 
         CreateWindow();
@@ -218,7 +82,7 @@ namespace Cobra
     void Window::CreateWindow()
     {
         glfwInit();
-        glfwWindowHint(GLFW_RESIZABLE, GL_TRUE);
+        glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
         screen = glfwCreateWindow((screen_width * resolution) * pixel_scale, (screen_height * resolution) * pixel_scale, title, NULL, NULL);
 
         glfwSetKeyCallback(screen, key_callback);
@@ -246,6 +110,8 @@ namespace Cobra
     Window::~Window()
     {
         cameras.clear();
+        sectors.clear();
+        sector_order.clear();
     }
 
     bool Window::SwitchActiveCamera(int camera)
@@ -313,6 +179,21 @@ namespace Cobra
     int Window::GetCameraCount()
     {
         return cameras.size();
+    }
+
+    int Window::GetWidth()
+    {
+        return screen_width;
+    }
+
+    int Window::GetHeight()
+    {
+        return screen_height;
+    }
+
+    int Window::GetResolution()
+    {
+        return resolution;
     }
 
     void Window::BubbleSortSectors(double z)
@@ -503,14 +384,14 @@ namespace Cobra
         
         int xs = (int)x1, xf = (int)x2;
 
-        if (x1 < 1) x1 = 1;
-        if (x2 < 1) x2 = 1;
-        if (x1 > screen_width - 1) x1 = screen_width - 1;
-        if (x2 > screen_width - 1) x2 = screen_width - 1;
+        if (x1 < 0) x1 = 0;
+        if (x2 < 0) x2 = 0;
+        if (x1 > screen_width) x1 = screen_width;
+        if (x2 > screen_width) x2 = screen_width;
 
         for (int x = xs; x < xf; x++)
         {
-            if (x > 0 && x < screen_width)
+            if (x >= 0 && x < screen_width)
             {
                 int y2 = dyb * (x - xs) / dx + b1;
                 int y1 = dyt * (x - xs) / dx + t1;
@@ -550,9 +431,12 @@ namespace Cobra
                 // Normal Wall
                 glColor3ub(wc.r, wc.g, wc.b);
 
+                Clamp(y1, 0, screen_height, false);
+                Clamp(y2, 0, screen_height, false);
+
                 int y = y1, yt = y2, dir = 1;
 
-                if (y1 >= y2)
+                if (y1 > y2)
                 {
                     y = y2;
                     yt = y1;

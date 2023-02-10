@@ -12,8 +12,7 @@ int DestroyObject(lua_State* L)
 
 int Quit(lua_State* L)
 {
-    Cobra::DeleteAllObjects();
-    glfwSetWindowShouldClose(Cobra::window->GetScreen(), GL_TRUE);
+    Cobra::Exit();
     return 0;
 }
 
