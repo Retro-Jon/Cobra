@@ -75,7 +75,7 @@ namespace Cobra
         current_camera = "";
         current_sector = 0;
 
-        sectors.push_back(assetloader->LoadSector("level.sect"));
+        sectors.push_back(assetloader->LoadSector("level.sect", window->GetWidth() * window->GetResolution()));
 
         sector_order.push_back(sectors.size() - 1);
 
@@ -98,6 +98,9 @@ namespace Cobra
 
         glfwMakeContextCurrent(screen);
         glOrtho(0, screen_width * resolution, 0, screen_height * resolution, -1.0f, 1.0f);
+
+        running = true;
+        rendering = true;
     }
 
     void Window::SetTitle(const char* Title)
@@ -465,11 +468,11 @@ namespace Cobra
     {
         static double rvt = 0; // Render View Timer
 
-        rvt += ElapsedTime * fps;
-
+        rvt += fps / ElapsedTime;
+        
         if (rvt > 1)
         {
-            if (rendering)
+            if (IsRendering())
             {
                 glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
                 glPointSize(pixel_scale);

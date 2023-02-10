@@ -33,6 +33,9 @@ namespace Cobra
             Window(std::string ScriptPath = "");
 
             void Init(int Width = 160, int Height = 120, int Resolution = 1, int Pixel_Scale = 4, int Fov = 200, int FPS = 30, const char* Title = "Cobra");
+            bool IsRunning() {return running;}
+            bool IsRendering() {return rendering;}
+            void SetRendering(bool value) {rendering = value;}
 
             ~Window();
 

@@ -13,7 +13,7 @@ namespace Cobra
             AssetLoader();
             ~AssetLoader();
 
-            Sector LoadSector(std::string path = "");
+            Sector LoadSector(std::string path = "", int amount_surf_points = 0);
     };
 
     COBRA_API extern AssetLoader* assetloader;

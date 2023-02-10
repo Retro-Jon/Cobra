@@ -67,7 +67,6 @@ namespace Cobra
     {
         for (std::pair<int, Object*> o : objects)
         {
-            std::cout << o.first << " : " << o.second << std::endl;
             DeleteObject(o.first);
         }
     }

@@ -70,8 +70,6 @@ namespace Cobra
             
             std::string funcs[] = {"OnReady", "KeyInput", "Logic", "Event"};
 
-            std::cout << ScriptPath << std::endl;
-
             for (std::string f : funcs)
             {
                 lua_getglobal(script, f.c_str());
@@ -82,11 +80,7 @@ namespace Cobra
                     script_functions[f] = true;
                 
                 lua_pop(script, 1);
-
-                std::cout << f << " : " << script_functions[f] << std::endl;
             }
-
-            std::cout << std::endl;
 
             if (has_function("OnReady"))
             {

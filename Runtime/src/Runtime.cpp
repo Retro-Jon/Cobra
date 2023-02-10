@@ -14,7 +14,7 @@ int main()
     Cobra::CalculateElapsedTime();
 
     int delete_timer = 10000;
-    
+
     while (!Cobra::window->Display())
     {
         for (std::pair<int, Cobra::Object*> o : Cobra::objects)
