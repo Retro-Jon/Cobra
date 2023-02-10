@@ -22,7 +22,7 @@ namespace Cobra
             std::vector<Sector> sectors;
             std::vector<int> sector_order;
             int current_sector;
-            int running;
+            bool running;
             bool rendering;
         
         protected:

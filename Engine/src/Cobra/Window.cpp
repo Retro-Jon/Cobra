@@ -54,7 +54,6 @@ namespace Cobra
 
     void Window::Init(int Width, int Height, int Resolution, int Pixel_Scale, int Fov, int FPS, const char* Title)
     {
-        running = true;
         window = this;
         
         resolution = Resolution;
@@ -66,7 +65,10 @@ namespace Cobra
         fps = FPS;
 
         if (Resolution > Pixel_Scale)
+        {
             std::cout << "Resolution can't be bigger than Pixel_Scale." << std::endl;
+            exit(1);
+        }
         
         title = Title;
 
@@ -74,9 +76,11 @@ namespace Cobra
         current_sector = 0;
 
         sectors.push_back(assetloader->LoadSector("level.sect"));
+
         sector_order.push_back(sectors.size() - 1);
 
         CreateWindow();
+        return;
     }
 
     void Window::CreateWindow()

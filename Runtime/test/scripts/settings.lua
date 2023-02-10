@@ -1,9 +1,9 @@
 Settings = {
     Window = {
-        Width = 1080,
-        Height = 720,
+        Width = 540,
+        Height = 360,
         Resolution = 1,
-        PixelScale = 1,
+        PixelScale = 2,
         Title = "Cobra Test"
     },
     Rendering = {

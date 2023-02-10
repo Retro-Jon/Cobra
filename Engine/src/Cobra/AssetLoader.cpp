@@ -6,15 +6,9 @@
 namespace Cobra
 {
     AssetLoader* assetloader;
-    AssetLoader::AssetLoader()
-    {
+    AssetLoader::AssetLoader(){}
 
-    }
-
-    AssetLoader::~AssetLoader()
-    {
-
-    }
+    AssetLoader::~AssetLoader(){}
 
     Sector AssetLoader::LoadSector(std::string path)
     {
@@ -110,7 +104,6 @@ namespace Cobra
                                 }
                             } else if (directive == "p")
                             {
-                                std::cout << loop_num << " : " << current_wall << " : " << first_point << " : " << line << std::endl;
                                 if (first_point)
                                 {
                                     switch (loop_num)
@@ -144,11 +137,6 @@ namespace Cobra
                 }
                 file.close();
             }
-        }
-
-        for (int w = 0; w < res.wall_count; w++)
-        {
-            std::cout << res.walls[w] << std::endl;
         }
 
         return res;
