@@ -7,7 +7,10 @@ namespace Cobra
     AssetLoader* assetloader;
     AssetLoader::AssetLoader(){}
 
-    AssetLoader::~AssetLoader(){}
+    AssetLoader::~AssetLoader()
+    {
+        assetloader = nullptr;
+    }
 
     Sector AssetLoader::LoadSector(std::string path, int amount_surf_points)
     {
@@ -18,7 +21,8 @@ namespace Cobra
             ERROR("LoadSector: amount_surf_points cannot be less than 1.");
         
         Sector res;
-
+        
+        res.distance = 0;
         res.surf_points = new int[amount_surf_points];
 
         std::ifstream file;
@@ -27,7 +31,7 @@ namespace Cobra
 
         if (file.is_open())
         {
-            int current_wall;
+            int current_wall = 0;
             bool first_point = true;
             
             while (std::getline(file, line))

@@ -1,9 +1,5 @@
 #pragma once
 
-#include "Core.hpp"
-#include "Object.hpp"
-#include "General.hpp"
-#include "Window.hpp"
 #include "../../lua/include/lua.hpp"
 
 int DestroyObject(lua_State* L);

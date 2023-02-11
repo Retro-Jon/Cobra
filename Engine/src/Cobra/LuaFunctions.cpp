@@ -1,4 +1,9 @@
 #include "headers/LuaFunctions.hpp"
+#include "headers/Window.hpp"
+#include "headers/Renderer.hpp"
+#include "headers/Object.hpp"
+#include "headers/Core.hpp"
+#include "headers/General.hpp"
 
 int DestroyObject(lua_State* L)
 {
@@ -33,7 +38,7 @@ int Move(lua_State* L)
 
     if (Cobra::objects[idx]->GetBoundCamera() != "")
     {
-        Cobra::window->MoveCamera(Cobra::objects[idx]->GetBoundCamera(), f);
+        Cobra::renderer->MoveCamera(Cobra::objects[idx]->GetBoundCamera(), f);
     }
     return 0;
 }
@@ -55,7 +60,7 @@ int Push(lua_State* L)
 
     if (Cobra::objects[idx]->GetBoundCamera() != "")
     {
-        Cobra::window->PushCamera(Cobra::objects[idx]->GetBoundCamera(), f);
+        Cobra::renderer->PushCamera(Cobra::objects[idx]->GetBoundCamera(), f);
     }
 
     return 0;
@@ -94,7 +99,7 @@ int CreateCamera(lua_State* L)
     p.horizontal = (double)lua_tointeger(L, 5);
     p.vertical = (double)lua_tonumber(L, 6);
 
-    Cobra::window->CreateNewCamera(name, p);
+    Cobra::renderer->CreateNewCamera(name, p);
 
     return 0;
 }

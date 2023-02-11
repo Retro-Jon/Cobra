@@ -3,6 +3,7 @@
         "numeric": "cpp",
         "new": "cpp",
         "fstream": "cpp",
-        "sstream": "cpp"
+        "sstream": "cpp",
+        "iostream": "cpp"
     }
 }
