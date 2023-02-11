@@ -4,6 +4,15 @@
 
 namespace Cobra
 {
+    struct Pos
+    {
+        double x;
+        double y;
+        double z;
+        double horizontal;
+        double vertical;
+    };
+
     enum
     {
         Normal = 0, // External View
@@ -19,7 +28,7 @@ namespace Cobra
 
     struct Color
     {
-        int r, g, b;
+        int r, g, b, a;
     };
 
     struct SectorWall
@@ -35,6 +44,8 @@ namespace Cobra
         int wall_count;
         int top;
         int bottom;
+
+        Pos position;
 
         Color top_color;
         Color bottom_color;

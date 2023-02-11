@@ -12,7 +12,7 @@ namespace Cobra
         assetloader = nullptr;
     }
 
-    Sector AssetLoader::LoadSector(std::string path, int amount_surf_points)
+    std::vector<Sector> AssetLoader::LoadSectors(std::string path, int amount_surf_points)
     {
         if (path == "")
             ERROR("LoadSector: No path specified.");
@@ -20,10 +20,7 @@ namespace Cobra
         if (amount_surf_points < 1)
             ERROR("LoadSector: amount_surf_points cannot be less than 1.");
         
-        Sector res;
-        
-        res.distance = 0;
-        res.surf_points = new int[amount_surf_points];
+        std::vector<Sector> res;
 
         std::ifstream file;
         file.open("Sectors/" + path);
@@ -33,6 +30,8 @@ namespace Cobra
         {
             int current_wall = 0;
             bool first_point = true;
+
+            Sector current_sector;
             
             while (std::getline(file, line))
             {
@@ -41,42 +40,57 @@ namespace Cobra
 
                 while (std::getline(ss, directive, ' '))
                 {
+                    if (directive == "start")
+                    {
+                        current_sector.distance = 0;
+                        current_sector.surf_points = new int[amount_surf_points];
+                        current_wall = 0;
+                    }
+
+                    if (directive == "break")
+                    {
+                        res.push_back(current_sector);
+                        break;
+                    }
                     int loop_num = 0;
 
                     while (std::getline(ss, line, ','))
                     {
                         if (line.empty())
                             continue;
-
+                        
                         if (directive == "c")
                         {
-                            res.wall_count = std::stoi(line);
-                            res.walls = new SectorWall[res.wall_count];
+                            current_sector.wall_count = std::stoi(line);
+                            current_sector.walls = new SectorWall[current_sector.wall_count];
                         }
                         else if (directive == "v")
                         {
                             if (line == "Normal")
-                                res.view = Normal;
+                                current_sector.view = Normal;
                             else if (line == "Hollow")
-                                res.view = Hollow;
+                                current_sector.view = Hollow;
                             else if (line == "Inverted")
-                                res.view = Inverted;
+                                current_sector.view = Inverted;
                         } else if (directive == "t")
-                            res.top = std::stoi(line);
+                            current_sector.top = std::stoi(line) + current_sector.position.z;
                         else if (directive == "b")
-                            res.bottom = std::stoi(line);
+                            current_sector.bottom = std::stoi(line) + current_sector.position.z;
                         else if (directive == "tc")
                         {
                             switch (loop_num)
                             {
                                 case 0:
-                                    res.top_color.r = std::stoi(line);
+                                    current_sector.top_color.r = std::stoi(line);
                                     break;
                                 case 1:
-                                    res.top_color.g = std::stoi(line);
+                                    current_sector.top_color.g = std::stoi(line);
                                     break;
                                 case 2:
-                                    res.top_color.b = std::stoi(line);
+                                    current_sector.top_color.b = std::stoi(line);
+                                    break;
+                                case 3:
+                                    current_sector.top_color.a = std::stoi(line);
                                     break;
                             }
                         } else if (directive == "bc")
@@ -84,13 +98,16 @@ namespace Cobra
                             switch (loop_num)
                             {
                                 case 0:
-                                    res.bottom_color.r = std::stoi(line);
+                                    current_sector.bottom_color.r = std::stoi(line);
                                     break;
                                 case 1:
-                                    res.bottom_color.g = std::stoi(line);
+                                    current_sector.bottom_color.g = std::stoi(line);
                                     break;
                                 case 2:
-                                    res.bottom_color.b = std::stoi(line);
+                                    current_sector.bottom_color.b = std::stoi(line);
+                                    break;
+                                case 3:
+                                    current_sector.bottom_color.a = std::stoi(line);
                                     break;
                             }
                         } else if (directive == "wc")
@@ -98,13 +115,16 @@ namespace Cobra
                             switch (loop_num)
                             {
                                 case 0:
-                                    res.walls[current_wall].wall_color.r = std::stoi(line);
+                                    current_sector.walls[current_wall].wall_color.r = std::stoi(line);
                                     break;
                                 case 1:
-                                    res.walls[current_wall].wall_color.g = std::stoi(line);
+                                    current_sector.walls[current_wall].wall_color.g = std::stoi(line);
                                     break;
                                 case 2:
-                                    res.walls[current_wall].wall_color.b = std::stoi(line);
+                                    current_sector.walls[current_wall].wall_color.b = std::stoi(line);
+                                    break;
+                                case 3:
+                                    current_sector.walls[current_wall].wall_color.a = std::stoi(line);
                                     break;
                             }
                         } else if (directive == "p")
@@ -114,10 +134,10 @@ namespace Cobra
                                 switch (loop_num)
                                 {
                                     case 0:
-                                        res.walls[current_wall].p1.x = std::stoi(line);
+                                        current_sector.walls[current_wall].p1.x = std::stoi(line) + current_sector.position.x;
                                         break;
                                     case 1:
-                                        res.walls[current_wall].p1.y = std::stoi(line);
+                                        current_sector.walls[current_wall].p1.y = std::stoi(line) + current_sector.position.y;
                                         first_point = !first_point;
                                         break;
                                 }
@@ -125,14 +145,28 @@ namespace Cobra
                                 switch (loop_num)
                                 {
                                     case 0:
-                                        res.walls[current_wall].p2.x = std::stoi(line);
+                                        current_sector.walls[current_wall].p2.x = std::stoi(line) + current_sector.position.x;
                                         break;
                                     case 1:
-                                        res.walls[current_wall].p2.y = std::stoi(line);
+                                        current_sector.walls[current_wall].p2.y = std::stoi(line) + current_sector.position.y;
                                         first_point = !first_point;
                                         current_wall++;
                                         break;
                                 }
+                            }
+                        } else if (directive == "position")
+                        {
+                            switch (loop_num)
+                            {
+                                case 0:
+                                    current_sector.position.x = std::stoi(line);
+                                    break;
+                                case 1:
+                                    current_sector.position.y = std::stoi(line);
+                                    break;
+                                case 2:
+                                    current_sector.position.z = std::stoi(line);
+                                    break;
                             }
                         }
 

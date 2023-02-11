@@ -139,15 +139,6 @@ namespace Cobra
         return res;
     }
 
-    struct Pos
-    {
-        double x;
-        double y;
-        double z;
-        double horizontal;
-        double vertical;
-    };
-
     Pos operator + (const Pos& a, const Pos& b);
     Pos operator - (const Pos& a, const Pos& b);
     Pos& operator += (Pos& a, const Pos& b);

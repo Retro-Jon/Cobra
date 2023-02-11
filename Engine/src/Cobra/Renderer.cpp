@@ -29,6 +29,15 @@ namespace Cobra
         sector_order.push_back(sectors.size() - 1);
     }
 
+    void Renderer::SetSectors(std::vector<Sector> n_sectors)
+    {
+        sectors.clear();
+        sector_order.clear();
+
+        for (Sector s : n_sectors)
+            AddSector(s);
+    }
+
     bool Renderer::SwitchActiveCamera(int camera)
     {
         if (camera < cameras.size())
@@ -108,7 +117,7 @@ namespace Cobra
             {
                 if (w + 1 < sector_order.size() - limit)
                 {
-                    if (sectors[sector_order[w]].distance < sectors[sector_order[w + 1]].distance)
+                    if ((sectors[sector_order[w]].distance < sectors[sector_order[w + 1]].distance) && sectors[sector_order[w]].view != Inverted)
                     {
                         int tmp = sector_order[w];
                         sector_order[w] = sector_order[w + 1];
@@ -220,6 +229,7 @@ namespace Cobra
                         wy[3] = wall.p2.y * COS + wall.p2.x * SIN;
 
                         sectors[index].distance = dist(0, 0, (wx[0] + wx[1]) / 2, (wy[0] + wy[1]) / 2); // Store Wall Distance
+                        // sectors[index].distance = dist(0, 0, cs.position.x + cc.x, cs.position.y + cc.y);
 
                         // Z
                         wz[0] = cs.bottom - cc.z + (((cc.vertical - 90) * wy[0]) / 32.00);
@@ -320,12 +330,12 @@ namespace Cobra
                 // Draw
                 if (view != Hollow)
                 {
-                    if (surface == -1)          // Bottom
+                    if (surface == -1 && bc.a == 1)          // Bottom
                     {
                         glColor3ub(bc.r, bc.g, bc.b);
                         for (int y = points[x]; y < y1; y++)
                             glVertex2i(x, y);
-                    } else if (surface == -2)   // Top
+                    } else if (surface == -2 && tc.a == 1)   // Top
                     {
                         glColor3ub(tc.r, tc.g, tc.b);
                         for (int y = y2; y < points[x]; y++)
@@ -333,22 +343,25 @@ namespace Cobra
                     }
                 }
 
-                // Normal Wall
-                glColor3ub(wc.r, wc.g, wc.b);
-
-                Clamp(y1, 0, window->GetHeight(), false);
-                Clamp(y2, 0, window->GetHeight(), false);
-
-                int y = y1, yt = y2, dir = 1;
-
-                if (y1 > y2)
+                if (wc.a == 1)
                 {
-                    y = y2;
-                    yt = y1;
-                }
+                    // Normal Wall
+                    glColor3ub(wc.r, wc.g, wc.b);
 
-                for (y; y < yt; y++)
-                    glVertex2i(x, y);
+                    Clamp(y1, 0, window->GetHeight(), false);
+                    Clamp(y2, 0, window->GetHeight(), false);
+
+                    int y = y1, yt = y2, dir = 1;
+
+                    if (y1 > y2)
+                    {
+                        y = y2;
+                        yt = y1;
+                    }
+
+                    for (y; y < yt; y++)
+                        glVertex2i(x, y);
+                }
             }
         }
         glEnd();
