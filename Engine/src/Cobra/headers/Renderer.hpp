@@ -20,6 +20,7 @@ namespace Cobra
             std::vector<Sector> sectors;
             std::vector<int> sector_order;
             int current_sector;
+            int max_distance = 200;
         
         public:
             Renderer(int Fov = 200);
@@ -29,7 +30,7 @@ namespace Cobra
             void SetSectors(std::vector<Sector> n_sectors);
             bool SwitchActiveCamera(int camera = 0);
             void MoveActiveCamera(Pos force = (Pos){.x = 0, .y = 0, .z = 0, .horizontal = 0, .vertical = 0});
-            void MoveCamera(std::string name = "", Pos force = (Pos){.x = 0, .y = 0, .z = 0, .horizontal = 0, .vertical = 0});
+            void MoveCamera(std::string name = "", Pos position = (Pos){.x = 0, .y = 0, .z = 0, .horizontal = 0, .vertical = 0});
             void PushCamera(std::string name = "", Pos force = (Pos){.x = 0, .y = 0, .z = 0, .horizontal = 0, .vertical = 0});
             void CreateNewCamera(std::string name, Pos position = (Pos){.x = 0, .y = 0, .z = 0, .horizontal = 0, .vertical = 0});
             int GetCameraCount();

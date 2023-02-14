@@ -34,6 +34,7 @@ namespace Cobra
     std::queue<Object*> DeletionQueue;
     int next_object_id = 0;
 
+    // Check if lua function returns an error
     bool CheckLua(lua_State* L, int r, const char* function_name)
     {
         if (r != LUA_OK && lua_isnil(L, 0))

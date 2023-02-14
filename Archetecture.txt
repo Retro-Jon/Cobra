@@ -2,6 +2,7 @@ Cobra:
     Responsibilities
         - Window Management
             - Settings
+        - Renderer
             - Drawing
         - Audio
             - Loading & Playing Audio Files
@@ -17,11 +18,19 @@ Cobra:
     Sectors
         - Used to build a level
         - Static by default
+    
+    AssetLoader
+        - Loads Sectors (.sect files)
 
 Runtime:
     Responsibilities
         - Loading Game Specific Resources
             - Lua scripts
+        - Game loop
+            - Invokes Renderer through the window's Display function
+            - Runs the Logic function of each object
+            - Deletes objects in DeletionQueue when timer runs out.
+            - Recalculates ElapsedTime
     
     Setup
         1. Populate math arrays with precalculated function values
@@ -30,3 +39,8 @@ Runtime:
             OR
             - Use default settings if "settings.lua" is not present.
         3. Create main script object.
+    
+    Shutdown
+        1. Call DeleteAllObjects
+        2. delete Renderer
+        3. delete Window
