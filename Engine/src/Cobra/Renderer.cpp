@@ -1,4 +1,5 @@
 #include <iostream>
+#include <GLFW/glfw3.h>
 
 #include "headers/Renderer.hpp"
 #include "headers/Window.hpp"
@@ -20,15 +21,16 @@ namespace Cobra
         cameras.clear();
         sectors.clear();
         sector_order.clear();
-        renderer = nullptr;
     }
 
+    // Add n_sector to sectors and push its index to sector_order
     void Renderer::AddSector(Sector n_sector)
     {
         sectors.push_back(n_sector);
         sector_order.push_back(sectors.size() - 1);
     }
 
+    // Clear and replace sectors and sector_order vectors
     void Renderer::SetSectors(std::vector<Sector> n_sectors)
     {
         sectors.clear();
@@ -38,6 +40,12 @@ namespace Cobra
             AddSector(s);
     }
 
+    std::vector<Sector> Renderer::GetSectors()
+    {
+        return sectors;
+    }
+
+    // Change active camera to camera
     bool Renderer::SwitchActiveCamera(int camera)
     {
         if (camera < cameras.size())
@@ -49,16 +57,17 @@ namespace Cobra
         return false;
     }
 
-    void Renderer::MoveActiveCamera(Pos force)
+    void Renderer::MoveActiveCamera(Pos position)
     {
-        MoveCamera(current_camera, force);
+        MoveCamera(current_camera, position);
     }
 
-    void Renderer::MoveCamera(std::string name, Pos force)
+    void Renderer::MoveCamera(std::string name, Pos position)
     {
-        cameras[name] = force;
+        cameras[name] = position;
     }
 
+    // Apply force to camera <name>
     void Renderer::PushCamera(std::string name, Pos force)
     {
         Pos* cc = &cameras[name];
@@ -92,6 +101,7 @@ namespace Cobra
         cc->z += force.z * ElapsedTime;
     }
 
+    // Create new camera <name> at position
     void Renderer::CreateNewCamera(std::string name, Pos position)
     {
         cameras.insert(std::pair<std::string, Pos>(name, position));
@@ -107,6 +117,7 @@ namespace Cobra
         return cameras.size();
     }
 
+    // Sort Sectors
     void Renderer::BubbleSortSectors(double z)
     {
         int limit = 0;
@@ -117,7 +128,27 @@ namespace Cobra
             {
                 if (w + 1 < sector_order.size() - limit)
                 {
-                    if ((sectors[sector_order[w]].distance < sectors[sector_order[w + 1]].distance) && sectors[sector_order[w]].view != Inverted)
+                    if (sectors[sector_order[w]].distance < sectors[sector_order[w + 1]].distance)
+                    {
+                        int tmp = sector_order[w];
+                        sector_order[w] = sector_order[w + 1];
+                        sector_order[w + 1] = tmp;
+                    }
+                }
+            }
+            limit++;
+        }
+
+        limit = 0;
+
+        // view
+        for (int s = 0; s < sector_order.size(); s++)
+        {
+            for (int w = 0; w < sector_order.size() - limit; w++)
+            {
+                if (w + 1 < sector_order.size() - limit)
+                {
+                    if (sectors[sector_order[w + 1]].view == Inverted && sectors[sector_order[w]].view != Inverted)
                     {
                         int tmp = sector_order[w];
                         sector_order[w] = sector_order[w + 1];
@@ -154,11 +185,12 @@ namespace Cobra
         }
     }
 
+    // Render sectors from perspective of current_camera
     void Renderer::RenderView()
     {
         if (fov == 0)
             return;
-
+        
         const double multiplier = window->GetWidth() / fov;
         static Pos last_cc;
         
@@ -186,6 +218,10 @@ namespace Cobra
                 {
                     for (int w = 0; w < cs.wall_count; w++)
                     {
+                        // Don't draw wall if distance is greater than max_distance
+                        if (loop > 0 && sectors[index].distance > max_distance)
+                            continue;
+                        
                         SectorWall wall;
 
                         wall.p1.x = cs.walls[w].p1.x - cc.x;
@@ -229,7 +265,6 @@ namespace Cobra
                         wy[3] = wall.p2.y * COS + wall.p2.x * SIN;
 
                         sectors[index].distance = dist(0, 0, (wx[0] + wx[1]) / 2, (wy[0] + wy[1]) / 2); // Store Wall Distance
-                        // sectors[index].distance = dist(0, 0, cs.position.x + cc.x, cs.position.y + cc.y);
 
                         // Z
                         wz[0] = cs.bottom - cc.z + (((cc.vertical - 90) * wy[0]) / 32.00);
@@ -270,6 +305,7 @@ namespace Cobra
         }
     }
 
+    // Clip sectors in relation to current camera
     void Renderer::ClipBehindCamera(double& x1, double& y1, double& z1, const double& x2, const double& y2, const double& z2)
     {
         float da = y1;  // distance plane a
@@ -285,6 +321,7 @@ namespace Cobra
         z1 += s * (z2 - (z1));
     }
 
+    // Display wall from perspective of current_camera
     void Renderer::DrawWall(double x1, double x2, double t1, double t2, double b1, double b2, int surface, int* points, int view, Color wc, Color tc, Color bc)
     {
         // differences
@@ -367,6 +404,7 @@ namespace Cobra
         glEnd();
     }
 
+    // Draw a GL_POINT at position x,y with color r,g,b
     void Renderer::Pixel(int x, int y, int r, int g, int b)
     {
         glColor3ub(r, g, b);

@@ -1,5 +1,4 @@
 #pragma once
-
 #include "Core.hpp"
 #define _USE_MATH_DEFINES
 #define LUA_USE_APICHECK
@@ -146,6 +145,12 @@ namespace Cobra
 
     bool operator == (const Pos& a, const Pos& b);
     bool operator != (const Pos& a, const Pos& b);
+
+    bool operator == (const Color& a, const Color& b);
+    bool operator != (const Color& a, const Color& b);
+
+    bool operator == (const SectorPoint& a, const SectorPoint& b);
+    bool operator != (const SectorPoint& a, const SectorPoint& b);
 
     std::ostream& operator << (std::ostream& o, const Pos& p);
     std::ostream& operator << (std::ostream& o, const SectorWall& w);

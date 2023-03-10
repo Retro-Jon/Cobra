@@ -39,6 +39,8 @@ int main()
         Cobra::CalculateElapsedTime();
     }
 
+    Cobra::assetloader->SaveSectors("test.sect", Cobra::renderer->GetSectors());
+
     Cobra::DeleteAllObjects();
     delete Cobra::renderer;
     delete Cobra::window;

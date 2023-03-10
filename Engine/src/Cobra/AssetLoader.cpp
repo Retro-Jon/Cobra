@@ -29,7 +29,9 @@ namespace Cobra
         if (file.is_open())
         {
             int current_wall = 0;
-            bool first_point = true;
+            SectorPoint last_point;
+            bool last_point_set = false;
+            Color c_color;
 
             Sector current_sector;
             
@@ -37,6 +39,8 @@ namespace Cobra
             {
                 std::stringstream ss(line);
                 std::string directive;
+                if (line[0] == '#')
+                    continue;
 
                 while (std::getline(ss, directive, ' '))
                 {
@@ -49,9 +53,25 @@ namespace Cobra
 
                     if (directive == "break")
                     {
+                        last_point_set = false;
                         res.push_back(current_sector);
                         break;
                     }
+
+                    if (directive == "close")
+                    {
+                        current_sector.walls[current_wall].p1 = last_point;
+                        current_sector.walls[current_wall].p2 = current_sector.walls[0].p1;
+                        current_wall++;
+                        break;
+                    }
+
+                    if (directive == "gap")
+                    {
+                        last_point_set = false;
+                        break;
+                    }
+
                     int loop_num = 0;
 
                     while (std::getline(ss, line, ','))
@@ -115,33 +135,24 @@ namespace Cobra
                             switch (loop_num)
                             {
                                 case 0:
-                                    current_sector.walls[current_wall].wall_color.r = std::stoi(line);
+                                    c_color.r = std::stoi(line);
                                     break;
                                 case 1:
-                                    current_sector.walls[current_wall].wall_color.g = std::stoi(line);
+                                    c_color.g = std::stoi(line);
                                     break;
                                 case 2:
-                                    current_sector.walls[current_wall].wall_color.b = std::stoi(line);
+                                    c_color.b = std::stoi(line);
                                     break;
                                 case 3:
-                                    current_sector.walls[current_wall].wall_color.a = std::stoi(line);
+                                    c_color.a = std::stoi(line);
                                     break;
                             }
                         } else if (directive == "p")
                         {
-                            if (first_point)
+                            if (last_point_set)
                             {
-                                switch (loop_num)
-                                {
-                                    case 0:
-                                        current_sector.walls[current_wall].p1.x = std::stoi(line) + current_sector.position.x;
-                                        break;
-                                    case 1:
-                                        current_sector.walls[current_wall].p1.y = std::stoi(line) + current_sector.position.y;
-                                        first_point = !first_point;
-                                        break;
-                                }
-                            } else {
+                                current_sector.walls[current_wall].p1 = last_point;
+
                                 switch (loop_num)
                                 {
                                     case 0:
@@ -149,8 +160,20 @@ namespace Cobra
                                         break;
                                     case 1:
                                         current_sector.walls[current_wall].p2.y = std::stoi(line) + current_sector.position.y;
-                                        first_point = !first_point;
+                                        last_point = current_sector.walls[current_wall].p2;
+                                        current_sector.walls[current_wall].wall_color = c_color;
                                         current_wall++;
+                                        break;
+                                }
+                            } else {
+                                switch (loop_num)
+                                {
+                                    case 0:
+                                        last_point.x = std::stoi(line) + current_sector.position.x;
+                                        break;
+                                    case 1:
+                                        last_point.y = std::stoi(line) + current_sector.position.y;
+                                        last_point_set = true;
                                         break;
                                 }
                             }
@@ -178,5 +201,69 @@ namespace Cobra
         }
 
         return res;
+    }
+
+    void AssetLoader::SaveSectors(std::string path, std::vector<Sector> sectors)
+    {
+        if (path == "")
+            ERROR("LoadSector: No path specified.");
+        
+        std::ofstream file;
+        file.open("Sectors/" + path);
+
+        for (Sector s : sectors)
+        {
+            file << "start\n";
+            file << "c " << s.wall_count << "\n";
+            file << "v ";
+
+            if (s.view == Normal)
+                file << "Normal\n";
+            else if (s.view == Inverted)
+                file << "Inverted\n";
+            else
+                file << "Hollow\n";
+            
+            file << "position ";
+            file << s.position.x << "," << s.position.y << "," << s.position.z << "\n";
+
+            file << "t " << s.top << "\n";
+            file << "b " << s.bottom << "\n";
+
+            file << "tc ";
+            file << s.top_color.r << "," << s.top_color.g << "," << s.top_color.b << "," << s.top_color.a << "\n";
+
+            file << "bc ";
+            file << s.bottom_color.r << "," << s.bottom_color.g << "," << s.bottom_color.b << "," << s.bottom_color.a << "\n\n";
+
+            Color last_color = s.walls[0].wall_color;
+            SectorPoint last_point = s.walls[0].p1;
+
+            file << "wc ";
+            file << last_color.r << "," << last_color.g << "," << last_color.b << "," << last_color.a << "\n";
+            file << "p " << last_point.x << "," << last_point.y << "\n";
+
+            for (int i = 0; i < s.wall_count; i++)
+            {
+                SectorWall sw = s.walls[i];
+
+                if (sw.wall_color != last_color)
+                {
+                    last_color = sw.wall_color;
+                    file << "wc ";
+                    file << last_color.r << "," << last_color.g << "," << last_color.b << "," << last_color.a << "\n";
+                }
+
+                if (sw.p1 != last_point)
+                {
+                    file << "p " << sw.p1.x << "," << sw.p1.y << "\n";
+                }
+
+                file << "p " << sw.p2.x << "," << sw.p2.y << "\n";
+                last_point = sw.p2;
+            }
+
+            file << "\nbreak\n\n";
+        }
     }
 }

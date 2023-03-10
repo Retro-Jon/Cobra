@@ -54,9 +54,11 @@ namespace Cobra
 
     Window::~Window()
     {
-        window = nullptr;
+        glfwDestroyWindow(screen);
+        glfwTerminate();
     }
 
+    // Set member variables and create renderer
     void Window::Init(int Width, int Height, int Resolution, int Pixel_Scale, int Fov, int FPS, const char* Title)
     {
         window = this;
@@ -83,6 +85,7 @@ namespace Cobra
         return;
     }
 
+    // Create window instance
     void Window::CreateWindow()
     {
         glfwInit();
@@ -110,7 +113,7 @@ namespace Cobra
 
     void Window::End()
     {
-        running = true;
+        running = false;
     }
 
     int Window::GetWidth()
@@ -128,6 +131,7 @@ namespace Cobra
         return resolution;
     }
 
+    // Call renderer and regulate frame rate
     bool Window::Display()
     {
         static double rvt = 0; // Render View Timer

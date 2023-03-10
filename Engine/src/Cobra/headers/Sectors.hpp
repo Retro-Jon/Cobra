@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Core.hpp"
+#include <ostream>
 
 namespace Cobra
 {
@@ -26,6 +27,12 @@ namespace Cobra
         int y;
     };
 
+    static std::ostream& operator << (std::ostream& o, SectorPoint& p)
+    {
+        o << p.x << " " << p.y;
+        return o;
+    }
+
     struct Color
     {
         int r, g, b, a;
@@ -36,6 +43,7 @@ namespace Cobra
         SectorPoint p1;
         SectorPoint p2;
         Color wall_color;
+        double distance;
     };
 
     struct Sector

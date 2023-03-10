@@ -72,6 +72,36 @@ namespace Cobra
         return !(a == b);
     }
 
+    bool operator == (const Color& a, const Color& b)
+    {
+        bool rs = false;
+        bool gs = false;
+        bool bs = false;
+        bool as = false;
+
+        rs = ((int)a.r == (int)b.r);
+        gs = ((int)a.g == (int)b.g);
+        bs = ((int)a.b == (int)b.b);
+        as = ((int)a.a == (int)b.a);
+
+        return (rs && gs && bs && as);
+    }
+
+    bool operator != (const Color& a, const Color& b)
+    {
+        return !(a == b);
+    }
+
+    bool operator == (const SectorPoint& a, const SectorPoint& b)
+    {
+        return ((a.x == b.x) && (a.y == b.y));
+    }
+
+    bool operator != (const SectorPoint& a, const SectorPoint& b)
+    {
+        return !(a == b);
+    }
+
     std::ostream& operator << (std::ostream& o, const Pos& p)
     {
         o << "X: " << p.x << ", ";
