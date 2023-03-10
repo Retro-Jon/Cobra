@@ -40,11 +40,14 @@ namespace Cobra
             AddSector(s);
     }
 
+<<<<<<< HEAD
     std::vector<Sector> Renderer::GetSectors()
     {
         return sectors;
     }
 
+=======
+>>>>>>> 3ebdb8bdca0479e4a67f63a3ac2ff1b5b2b91efe
     // Change active camera to camera
     bool Renderer::SwitchActiveCamera(int camera)
     {
