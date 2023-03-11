@@ -8,7 +8,7 @@ COBRA_INCLUDES = -I"Engine/src/"
 
 RUNTIME_SRC = Runtime/src/Runtime.cpp
 RUNTIME_INCLUDES = -I"Engine/"
-RUNTIME_LIBS = Runtime/test/Cobra.dll
+RUNTIME_LIBS = Runtime/test/Cobra.dll Runtime/test/lua54.dll
 
 main:
 	$(CC) -g -std=c++17 $(COBRA_SRC) -shared $(COBRA_INCLUDES) -o Engine/bin/Cobra.dll $(COBRA_LIBS)

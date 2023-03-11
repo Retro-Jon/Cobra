@@ -29,16 +29,10 @@ b -10
 tc 0,0,0,0
 bc 0,0,0,0
 
-<<<<<<< HEAD
 wc 0,0,255,1
 p -10,10
 p 10,10
 break
-=======
-wc 0,0,255,0
-p -50,-50
-p 50,-50
->>>>>>> 3ebdb8bdca0479e4a67f63a3ac2ff1b5b2b91efe
 
 # Left Wall
 start
