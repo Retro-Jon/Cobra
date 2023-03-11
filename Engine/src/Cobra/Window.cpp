@@ -136,7 +136,7 @@ namespace Cobra
     {
         static double rvt = 0; // Render View Timer
 
-        rvt += fps / ElapsedTime;
+        rvt += fps * ElapsedTime;
         
         if (rvt > 1)
         {

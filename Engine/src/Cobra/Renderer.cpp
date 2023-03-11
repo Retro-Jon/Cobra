@@ -78,12 +78,12 @@ namespace Cobra
         Clamp(cc->horizontal, 0, 360);
         Clamp(cc->vertical, 0, 360);
 
-        double COS = M.cos[(int)cc->horizontal] * ElapsedTime;
-        double SIN = M.sin[(int)cc->horizontal] * ElapsedTime;
+        double COS = std::cos(cc->horizontal * (M_PI / 180)) * ElapsedTime;
+        double SIN = std::sin(cc->horizontal * (M_PI / 180)) * ElapsedTime;
         
         if (force.x != 0)
         {
-            if (M.tan[(int)cc->horizontal] <= 90 || M.tan[(int)cc->horizontal] >= 270)
+            if (std::tan(cc->horizontal * (M_PI / 180)) <= 90 || std::tan(cc->horizontal * (M_PI / 180)) >= 270)
             {
                 cc->x += force.x * COS;
                 cc->y -= force.x * SIN;
@@ -233,7 +233,7 @@ namespace Cobra
                         wall.wall_color = cs.walls[w].wall_color;
 
                         double wx[4], wy[4], wz[4];
-                        double COS = M.cos[(int)cc.horizontal], SIN = M.sin[(int)cc.horizontal];
+                        double COS = std::cos(cc.horizontal * (M_PI / 180)), SIN = std::sin(cc.horizontal * (M_PI / 180));
 
                         // swap surface
 
@@ -325,16 +325,16 @@ namespace Cobra
     void Renderer::DrawWall(double x1, double x2, double t1, double t2, double b1, double b2, int surface, int* points, int view, Color wc, Color tc, Color bc)
     {
         // differences
-        double dyb = b2 - b1;
-        double dyt = t2 - t1;
+        int dyb = floor(b2) - floor(b1);
+        int dyt = floor(t2) - floor(t1);
 
-        double dx = x2 - x1;
+        int dx = floor(x2) - floor(x1);
 
         if (dx == 0) dx = 1;
 
         glBegin(GL_POINTS);
         
-        int xs = (int)x1, xf = (int)x2;
+        int xs = x1, xf = x2;
 
         if (x1 < 0) x1 = 0;
         if (x2 < 0) x2 = 0;

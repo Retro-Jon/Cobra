@@ -7,7 +7,7 @@ Settings = {
         Title = "Cobra Test"
     },
     Rendering = {
-        Fov = 300,
-        FPS = 60
+        Fov = 200,
+        FPS = 1
     }
 }

@@ -2,6 +2,7 @@
 #include "headers/Object.hpp"
 #include "headers/Window.hpp"
 #include <iostream>
+#include <iomanip>
 #include <chrono>
 
 namespace Cobra
@@ -104,11 +105,16 @@ namespace Cobra
 
     std::ostream& operator << (std::ostream& o, const Pos& p)
     {
-        o << "X: " << p.x << ", ";
-        o << "Y: " << p.y << ", ";
-        o << "Z: " << p.z << ", ";
-        o << "Horizontal: " << p.horizontal, ", ";
-        o << "Vertical: " << p.vertical;
+        o << "X: ";
+        o << std::setw(9) << p.x << ", ";
+        o << "Y: ";
+        o << std::setw(9) << p.y << ", ";
+        o << "Z: ";
+        o << std::setw(9) << p.z << ", ";
+        o << "Horizontal: ";
+        o << std::setw(9) << p.horizontal << ", ";
+        o << "Vertical: ";
+        o << std::setw(9) << p.vertical;
 
         return o;
     }
