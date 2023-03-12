@@ -12,29 +12,6 @@
 
 namespace Cobra
 {
-    struct Math
-    {
-        double sin[360];
-        double cos[360];
-        double tan[360];
-        double rad[360];
-    };
-
-    COBRA_API extern struct Math M;
-
-    static void PopulateMath()
-    {
-        for (int i = 0; i < 360; i++)
-        {
-            double v = ((double)i) * (M_PI / 180);
-            M.rad[i] = v;
-
-            M.sin[i] = std::sin(v);
-            M.cos[i] = std::cos(v);
-            M.tan[i] = std::tan(v);
-        }
-    }
-
     COBRA_API extern double ElapsedTime;
 
     COBRA_API extern void CalculateElapsedTime();

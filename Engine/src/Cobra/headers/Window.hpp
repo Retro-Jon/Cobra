@@ -1,6 +1,5 @@
 #pragma once
 
-#include <GLFW/glfw3.h>
 #include "Core.hpp"
 #include <iostream>
 #include <vector>
@@ -8,13 +7,14 @@
 #include "Sectors.hpp"
 #include "General.hpp"
 
+#include <GLFW/glfw3.h>
+
 namespace Cobra
 {
     class COBRA_API Window
     {
         private:
-            int screen_width, screen_height, resolution, fov, fps;
-            int pixel_scale;
+            int screen_width, screen_height, fov, fps;
             const char* title;
             int current_sector;
             bool running;
@@ -24,18 +24,17 @@ namespace Cobra
             GLFWwindow* screen;
         
         public:
-            Window(int Width = 160, int Height = 120, int Resolution = 1, int Pixel_Scale = 4, int Fov = 200, int FPS = 30, const char* Title = "Cobra");
+            Window(int Width = 160, int Height = 120, int Fov = 200, int FPS = 30, const char* Title = "Cobra");
             Window(std::string ScriptPath = "");
             ~Window();
 
-            void Init(int Width = 160, int Height = 120, int Resolution = 1, int Pixel_Scale = 4, int Fov = 200, int FPS = 30, const char* Title = "Cobra");
+            void Init(int Width = 160, int Height = 120, int Fov = 200, int FPS = 30, const char* Title = "Cobra");
             bool IsRunning() {return running;}
             bool IsRendering() {return rendering;}
             void SetRendering(bool value) {rendering = value;}
 
             int GetWidth();
             int GetHeight();
-            int GetResolution();
 
             bool Display();
             void CreateWindow();

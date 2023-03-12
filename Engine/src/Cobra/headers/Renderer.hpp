@@ -1,6 +1,5 @@
 #pragma once
 
-#include <GLFW/glfw3.h>
 #include <vector>
 #include <map>
 #include <string>
@@ -8,6 +7,7 @@
 #include "Core.hpp"
 #include "Sectors.hpp"
 #include "General.hpp"
+#include "ViewPort.hpp"
 
 namespace Cobra
 {
@@ -21,6 +21,7 @@ namespace Cobra
             std::vector<int> sector_order;
             int current_sector;
             int max_distance = 200;
+            ViewPort* main_view;
         
         public:
             Renderer(int Fov = 200);

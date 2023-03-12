@@ -5,5 +5,6 @@
 #include "src/Cobra/headers/General.hpp"
 #include "src/Cobra/headers/AssetLoader.hpp"
 #include "src/Cobra/headers/Renderer.hpp"
+#include "src/Cobra/headers/ViewPort.hpp"
 
 #include "src/lua/include/lua.hpp"

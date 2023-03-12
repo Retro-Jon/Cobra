@@ -1,4 +1,8 @@
 #include <iostream>
+
+#define GLEW_STATIC
+#include <GL/glew.h>
+#define GLFW_INCLUDE_NONE
 #include <GLFW/glfw3.h>
 
 #include "headers/Renderer.hpp"
@@ -14,6 +18,8 @@ namespace Cobra
         current_camera = "";
         current_sector = 0;
         fov = Fov;
+        main_view = new ViewPort(0, 0, window->GetWidth(), window->GetHeight());
+        main_view->MakeRenderTarget();
     }
 
     Renderer::~Renderer()
@@ -274,14 +280,14 @@ namespace Cobra
 
                         // Screen Positions
                         // X
-                        wx[0] = wx[0] * fov / wy[0] + (window->GetWidth() * window->GetResolution() / 2);
-                        wx[1] = wx[1] * fov / wy[1] + (window->GetWidth() * window->GetResolution() / 2);
+                        wx[0] = wx[0] * fov / wy[0] + (window->GetWidth() / 2);
+                        wx[1] = wx[1] * fov / wy[1] + (window->GetWidth() / 2);
 
                         // Y
-                        wy[0] = wz[0] * fov / wy[0] + (window->GetHeight() * window->GetResolution() / 2);
-                        wy[1] = wz[1] * fov / wy[1] + (window->GetHeight() * window->GetResolution() / 2);
-                        wy[2] = wz[2] * fov / wy[2] + (window->GetHeight() * window->GetResolution() / 2);
-                        wy[3] = wz[3] * fov / wy[3] + (window->GetHeight() * window->GetResolution() / 2);
+                        wy[0] = wz[0] * fov / wy[0] + (window->GetHeight() / 2);
+                        wy[1] = wz[1] * fov / wy[1] + (window->GetHeight() / 2);
+                        wy[2] = wz[2] * fov / wy[2] + (window->GetHeight() / 2);
+                        wy[3] = wz[3] * fov / wy[3] + (window->GetHeight() / 2);
                         
                         if (wy[0] < 1 && wy[1] < 1) break;
 

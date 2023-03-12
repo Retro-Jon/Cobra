@@ -191,12 +191,13 @@ namespace Cobra
         Clamp(position.horizontal, 0, 360);
         Clamp(position.vertical, 0, 360);
 
-        double COS = M.cos[(int)position.horizontal] * ElapsedTime;
-        double SIN = M.sin[(int)position.horizontal] * ElapsedTime;
+        double COS = std::cos(position.horizontal) * ElapsedTime;
+        double SIN = std::sin(position.horizontal) * ElapsedTime;
+        double TAN = std::tan(position.horizontal);
 
         if (force.x != 0)
         {
-            if (M.tan[(int)position.horizontal] <= 90 || M.tan[(int)position.horizontal] >= 270)
+            if (TAN <= 90 || TAN >= 270)
             {
                 position.x += force.x * COS;
                 position.y -= force.x * SIN;

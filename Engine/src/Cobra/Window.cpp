@@ -28,8 +28,6 @@ namespace Cobra
 
             w = LuaGetTableNumberValue<int>(settings, "Width");
             h = LuaGetTableNumberValue<int>(settings, "Height");
-            r = LuaGetTableNumberValue<int>(settings, "Resolution");
-            p = LuaGetTableNumberValue<int>(settings, "PixelScale");
             t = LuaGetTableStringValue(settings, "Title");
 
             lua_pop(settings, 1);
@@ -39,17 +37,17 @@ namespace Cobra
             fov = LuaGetTableNumberValue<int>(settings, "Fov");
             fps = LuaGetTableNumberValue<int>(settings, "FPS");
 
-            Init(w, h, r, p, fov, fps, t.c_str());
+            Init(w, h, fov, fps, t.c_str());
 
             lua_close(settings);
         } else {
-            Init(160, 120, 1, 4, 200, 30, "Cobra");
+            Init(160, 120, 200, 30, "Cobra");
         }
     }
 
-    Window::Window(int Width, int Height, int Resolution, int Pixel_Scale, int Fov, int FPS, const char* Title)
+    Window::Window(int Width, int Height, int Fov, int FPS, const char* Title)
     {
-        Init(Width, Height, Resolution, Pixel_Scale, Fov, FPS, Title);
+        Init(Width, Height, Fov, FPS, Title);
     }
 
     Window::~Window()
@@ -59,23 +57,15 @@ namespace Cobra
     }
 
     // Set member variables and create renderer
-    void Window::Init(int Width, int Height, int Resolution, int Pixel_Scale, int Fov, int FPS, const char* Title)
+    void Window::Init(int Width, int Height, int Fov, int FPS, const char* Title)
     {
         window = this;
         
-        resolution = Resolution;
         screen_width = Width;
         screen_height = Height;
-        pixel_scale = Pixel_Scale / resolution;
 
-        fov = Fov * Resolution;
+        fov = Fov;
         fps = FPS;
-
-        if (Resolution > Pixel_Scale)
-        {
-            std::cout << "Resolution can't be bigger than Pixel_Scale." << std::endl;
-            exit(1);
-        }
         
         title = Title;
 
@@ -90,7 +80,7 @@ namespace Cobra
     {
         glfwInit();
         glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
-        screen = glfwCreateWindow((screen_width * resolution) * pixel_scale, (screen_height * resolution) * pixel_scale, title, NULL, NULL);
+        screen = glfwCreateWindow(screen_width, screen_height, title, NULL, NULL);
 
         glfwSetKeyCallback(screen, key_callback);
         glfwSetWindowSizeCallback(screen, size_callback);
@@ -100,7 +90,7 @@ namespace Cobra
         glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
 
         glfwMakeContextCurrent(screen);
-        glOrtho(0, screen_width * resolution, 0, screen_height * resolution, -1.0f, 1.0f);
+        glOrtho(0, screen_width, 0, screen_height, -1.0f, 1.0f);
 
         running = true;
     }
@@ -126,11 +116,6 @@ namespace Cobra
         return screen_height;
     }
 
-    int Window::GetResolution()
-    {
-        return resolution;
-    }
-
     // Call renderer and regulate frame rate
     bool Window::Display()
     {
@@ -143,7 +128,6 @@ namespace Cobra
             if (IsRendering())
             {
                 glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-                glPointSize(pixel_scale);
                 renderer->RenderView();
                 glfwSwapBuffers(screen);
             }
@@ -166,8 +150,7 @@ namespace Cobra
 
     void Window::SetSize(int width, int height)
     {
-        pixel_scale = ((width * (resolution * 0.0025)) + (height * 0.0025)) / 2;
-        glViewport(0, 0, (width * resolution), (height * resolution));
+        glViewport(0, 0, width, height);
     }
 
     void Window::ResetSize()

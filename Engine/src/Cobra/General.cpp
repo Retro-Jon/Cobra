@@ -7,8 +7,6 @@
 
 namespace Cobra
 {
-    Math M;
-
     Pos operator + (const Pos& a, const Pos& b)
     {
         Pos res;

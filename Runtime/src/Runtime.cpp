@@ -5,11 +5,10 @@
 
 int main()
 {
-    Cobra::PopulateMath();
     Cobra::assetloader = new Cobra::AssetLoader();
     Cobra::window = new Cobra::Window("settings.lua");
 
-    Cobra::renderer->SetSectors(Cobra::assetloader->LoadSectors("level.sect", Cobra::window->GetWidth() * Cobra::window->GetResolution()));
+    Cobra::renderer->SetSectors(Cobra::assetloader->LoadSectors("level.sect", Cobra::window->GetWidth()));
     
     Cobra::CreateObject("main.lua");
 

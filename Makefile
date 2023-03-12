@@ -3,7 +3,7 @@ CC = i686-w64-mingw32-g++
 COBRA_SRC_DIR = Engine/src/Cobra/
 COBRA_SRC = $(wildcard $(COBRA_SRC_DIR)*.cpp) $(wildcard $(COBRA_SRC_DIR)*.c)
 
-COBRA_LIBS = -lglfw3 -lopengl32 -lgdi32 Engine/bin/lua54.dll
+COBRA_LIBS = -lglfw3 -lglew32s -lopengl32 -lgdi32 Engine/bin/lua54.dll
 COBRA_INCLUDES = -I"Engine/src/"
 
 RUNTIME_SRC = Runtime/src/Runtime.cpp
