@@ -1,10 +1,5 @@
 #include <iostream>
 
-#define GLEW_STATIC
-#include <GL/glew.h>
-#define GLFW_INCLUDE_NONE
-#include <GLFW/glfw3.h>
-
 #include "headers/Renderer.hpp"
 #include "headers/Window.hpp"
 #include "headers/AssetLoader.hpp"

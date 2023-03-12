@@ -7,8 +7,6 @@
 #include "Sectors.hpp"
 #include "General.hpp"
 
-#include <GLFW/glfw3.h>
-
 namespace Cobra
 {
     class COBRA_API Window

@@ -1,10 +1,5 @@
 #include "headers/ViewPort.hpp"
 
-#define GLEW_STATIC
-#include <GL/glew.h>
-#define GLFW_INCLUDE_NONE
-#include <GLFW/glfw3.h>
-
 namespace Cobra
 {
     ViewPort::ViewPort(int x, int y, int w, int h)
