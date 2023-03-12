@@ -11,12 +11,17 @@
 
 namespace Cobra
 {
+    struct Camera
+    {
+        Pos position;
+        int fov;
+    };
+
     class COBRA_API Renderer
     {
         private:
-            int fov;
-            std::map<std::string, Pos> cameras;
-            std::string current_camera;
+            std::map<const char*, Camera> cameras;
+            std::map<const char*, ViewPort*> view_ports;
             std::vector<Sector> sectors;
             std::vector<int> sector_order;
             int current_sector;
@@ -24,24 +29,22 @@ namespace Cobra
             ViewPort* main_view;
         
         public:
-            Renderer(int Fov = 200);
+            Renderer();
             ~Renderer();
 
             void AddSector(Sector n_sector);
             void SetSectors(std::vector<Sector> n_sectors);
             std::vector<Sector> GetSectors();
-            bool SwitchActiveCamera(int camera = 0);
-            void MoveActiveCamera(Pos force = (Pos){.x = 0, .y = 0, .z = 0, .horizontal = 0, .vertical = 0});
-            void MoveCamera(std::string name = "", Pos position = (Pos){.x = 0, .y = 0, .z = 0, .horizontal = 0, .vertical = 0});
-            void PushCamera(std::string name = "", Pos force = (Pos){.x = 0, .y = 0, .z = 0, .horizontal = 0, .vertical = 0});
-            void CreateNewCamera(std::string name, Pos position = (Pos){.x = 0, .y = 0, .z = 0, .horizontal = 0, .vertical = 0});
+            void MoveCamera(const char* name = "", Pos position = (Pos){.x = 0, .y = 0, .z = 0, .horizontal = 0, .vertical = 0});
+            void PushCamera(const char* name = "", Pos force = (Pos){.x = 0, .y = 0, .z = 0, .horizontal = 0, .vertical = 0});
+            void CreateNewCamera(const char* name, Camera n_camera = (Camera){.position = (Pos){.x = 0, .y = 0, .z = 0, .horizontal = 0, .vertical = 0}, .fov = 0});
             int GetCameraCount();
 
             void BubbleSortSectors(double z);
             void RenderView();
 
             void ClipBehindCamera(double& x1, double& y1, double& z1, const double& x2, const double& y2, const double& z2);
-            void DrawWall(double x1, double x2, double t1, double t2, double b1, double b2, int surface, int* points, int view, Color wc, Color tc, Color bc);
+            void DrawWall(double x1, double x2, double t1, double t2, double b1, double b2, int surface, int* points, int view, Color wc, Color tc, Color bc, ViewPort* vp);
             void Pixel(int x, int y, int r = 255, int g = 255, int b = 255);
     };
 

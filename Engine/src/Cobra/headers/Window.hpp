@@ -12,7 +12,7 @@ namespace Cobra
     class COBRA_API Window
     {
         private:
-            int screen_width, screen_height, fov, fps;
+            int screen_width, screen_height, fps;
             const char* title;
             int current_sector;
             bool running;
@@ -22,11 +22,11 @@ namespace Cobra
             GLFWwindow* screen;
         
         public:
-            Window(int Width = 160, int Height = 120, int Fov = 200, int FPS = 30, const char* Title = "Cobra");
+            Window(int Width = 160, int Height = 120, int FPS = 30, const char* Title = "Cobra");
             Window(std::string ScriptPath = "");
             ~Window();
 
-            void Init(int Width = 160, int Height = 120, int Fov = 200, int FPS = 30, const char* Title = "Cobra");
+            void Init(int Width = 160, int Height = 120, int FPS = 30, const char* Title = "Cobra");
             bool IsRunning() {return running;}
             bool IsRendering() {return rendering;}
             void SetRendering(bool value) {rendering = value;}

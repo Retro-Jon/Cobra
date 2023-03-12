@@ -10,6 +10,7 @@
 #include <string>
 #include <iostream>
 #include <queue>
+#include <cstring>
 
 namespace Cobra
 {
@@ -18,8 +19,8 @@ namespace Cobra
         private:
             Pos position;
             int idx;
-            std::string bound_camera;
-            std::map<std::string, bool> script_functions;
+            const char* bound_camera;
+            std::map<const char*, bool> script_functions;
             bool queued;
         
         protected:
@@ -27,34 +28,37 @@ namespace Cobra
         
         public:
             Object(int index = -1);
-            void Ready(std::string ScriptPath = "");
+            void Ready(const char* ScriptPath = "");
             ~Object();
             void Delete();
 
-            bool has_function(std::string name);
+            bool has_function(const char* name);
 
             //lua functions
             void KeyInput(int key, int action);
             void Logic();
-            void Event(std::string e);
+            void Event(const char* e);
 
             // lua and C++
             void Move(Pos direction);
             void Push(Pos direction);
-            void BindToCamera(std::string camera);
+            void BindToCamera(const char* camera);
 
-            std::string GetBoundCamera();
+            const char* GetBoundCamera();
     };
 
     COBRA_API extern std::map<int, Object*> objects;
     COBRA_API extern std::queue<Object*> DeletionQueue;
     COBRA_API extern int next_object_id;
 
-    static int CreateObject(std::string ScriptPath = "")
+    static int CreateObject(const char* ScriptPath = "")
     {
         next_object_id++;
         objects.insert(std::pair<int, Object*>(next_object_id, new Object(next_object_id)));
-        objects[next_object_id]->Ready("scripts/" + ScriptPath);
+        std::string sp = "scripts/";
+        sp += ScriptPath;
+
+        objects[next_object_id]->Ready(sp.c_str());
         return objects.size();
     }
 

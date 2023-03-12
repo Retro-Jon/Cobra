@@ -12,7 +12,7 @@ move_speed = 60
 look_speed = 55
 
 function OnReady()
-    CreateCamera("player_view", 0, 0, 0, 0, 0)
+    CreateCamera("player_view", 0, 0, 0, 0, 0, 50)
     BindToCamera("player_view")
     Move(0, -60, 0, 0, 90)
     x = -move_speed

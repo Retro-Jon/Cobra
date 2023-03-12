@@ -8,13 +8,10 @@ namespace Cobra
 {
     Renderer* renderer;
 
-    Renderer::Renderer(int Fov)
+    Renderer::Renderer()
     {
-        current_camera = "";
         current_sector = 0;
-        fov = Fov;
-        main_view = new ViewPort(0, 0, window->GetWidth(), window->GetHeight());
-        main_view->MakeRenderTarget();
+        view_ports.insert(std::pair<const char*, ViewPort*>("main_view", new ViewPort(0, 0, window->GetWidth(), window->GetHeight())));
     }
 
     Renderer::~Renderer()
@@ -46,32 +43,15 @@ namespace Cobra
         return sectors;
     }
 
-    // Change active camera to camera
-    bool Renderer::SwitchActiveCamera(int camera)
+    void Renderer::MoveCamera(const char* name, Pos position)
     {
-        if (camera < cameras.size())
-        {
-            current_camera = camera;
-            return true;
-        }
-
-        return false;
-    }
-
-    void Renderer::MoveActiveCamera(Pos position)
-    {
-        MoveCamera(current_camera, position);
-    }
-
-    void Renderer::MoveCamera(std::string name, Pos position)
-    {
-        cameras[name] = position;
+        cameras[name].position = position;
     }
 
     // Apply force to camera <name>
-    void Renderer::PushCamera(std::string name, Pos force)
+    void Renderer::PushCamera(const char* name, Pos force)
     {
-        Pos* cc = &cameras[name];
+        Pos* cc = &cameras[name].position;
 
         cc->horizontal += force.horizontal * ElapsedTime;
         cc->vertical += force.vertical * ElapsedTime;
@@ -103,12 +83,10 @@ namespace Cobra
     }
 
     // Create new camera <name> at position
-    void Renderer::CreateNewCamera(std::string name, Pos position)
+    void Renderer::CreateNewCamera(const char* name, Camera n_camera)
     {
-        cameras.insert(std::pair<std::string, Pos>(name, position));
-        
-        if (current_camera == "")
-            current_camera = name;
+        cameras.insert(std::pair<const char*, Camera>(name, n_camera));
+        view_ports["main_view"]->BindCamera(name);
         
         std::cout << name << std::endl;
     }
@@ -189,18 +167,16 @@ namespace Cobra
     // Render sectors from perspective of current_camera
     void Renderer::RenderView()
     {
-        if (fov == 0)
-            return;
-        
-        const double multiplier = window->GetWidth() / fov;
-        static Pos last_cc;
-        
-        Pos cc = cameras[current_camera];
-
-        if (cc.x != last_cc.x || cc.y != last_cc.y || cc.z != last_cc.z)
+        for (std::pair<std::string, ViewPort*> v : view_ports)
         {
-            if (cc.horizontal != last_cc.horizontal || cc.vertical != last_cc.vertical)
-                BubbleSortSectors(cc.z);
+            if (v.second->GetBoundCamera() == "")
+                continue;
+            
+            ViewPort* vp = v.second;
+            
+            Camera cc = cameras[vp->GetBoundCamera()];
+
+            BubbleSortSectors(cc.position.z);
             
             // Draw Sectors
             for (int index : sector_order)
@@ -208,9 +184,9 @@ namespace Cobra
                 Sector cs = sectors[index];
                 sectors[index].distance = 0;
 
-                if (cc.z < cs.bottom)
+                if (cc.position.z < cs.bottom)
                     sectors[index].surface = 1; // Bottom
-                else if (cc.z > cs.top)
+                else if (cc.position.z > cs.top)
                     sectors[index].surface = 2; // Top
                 else
                     sectors[index].surface = 0; // None
@@ -225,16 +201,16 @@ namespace Cobra
                         
                         SectorWall wall;
 
-                        wall.p1.x = cs.walls[w].p1.x - cc.x;
-                        wall.p1.y = cs.walls[w].p1.y - cc.y;
+                        wall.p1.x = cs.walls[w].p1.x - cc.position.x;
+                        wall.p1.y = cs.walls[w].p1.y - cc.position.y;
 
-                        wall.p2.x = cs.walls[w].p2.x - cc.x;
-                        wall.p2.y = cs.walls[w].p2.y - cc.y;
+                        wall.p2.x = cs.walls[w].p2.x - cc.position.x;
+                        wall.p2.y = cs.walls[w].p2.y - cc.position.y;
 
                         wall.wall_color = cs.walls[w].wall_color;
 
                         double wx[4], wy[4], wz[4];
-                        double COS = std::cos(cc.horizontal * (M_PI / 180)), SIN = std::sin(cc.horizontal * (M_PI / 180));
+                        double COS = std::cos(cc.position.horizontal * (M_PI / 180)), SIN = std::sin(cc.position.horizontal * (M_PI / 180));
 
                         // swap surface
 
@@ -268,21 +244,21 @@ namespace Cobra
                         sectors[index].distance = dist(0, 0, (wx[0] + wx[1]) / 2, (wy[0] + wy[1]) / 2); // Store Wall Distance
 
                         // Z
-                        wz[0] = cs.bottom - cc.z + (((cc.vertical - 90) * wy[0]) / 32.00);
-                        wz[1] = cs.bottom - cc.z + (((cc.vertical - 90) * wy[1]) / 32.00);
-                        wz[2] = cs.top - cc.z + (((cc.vertical - 90) * wy[2]) / 32.00);
-                        wz[3] = cs.top - cc.z + (((cc.vertical - 90) * wy[3]) / 32.00);
+                        wz[0] = cs.bottom - cc.position.z + (((cc.position.vertical - 90) * wy[0]) / 32.00);
+                        wz[1] = cs.bottom - cc.position.z + (((cc.position.vertical - 90) * wy[1]) / 32.00);
+                        wz[2] = cs.top - cc.position.z + (((cc.position.vertical - 90) * wy[2]) / 32.00);
+                        wz[3] = cs.top - cc.position.z + (((cc.position.vertical - 90) * wy[3]) / 32.00);
 
                         // Screen Positions
                         // X
-                        wx[0] = wx[0] * fov / wy[0] + (window->GetWidth() / 2);
-                        wx[1] = wx[1] * fov / wy[1] + (window->GetWidth() / 2);
+                        wx[0] = wx[0] * cc.fov / wy[0] + (vp->GetTransformation().w / 2);
+                        wx[1] = wx[1] * cc.fov / wy[1] + (vp->GetTransformation().w / 2);
 
                         // Y
-                        wy[0] = wz[0] * fov / wy[0] + (window->GetHeight() / 2);
-                        wy[1] = wz[1] * fov / wy[1] + (window->GetHeight() / 2);
-                        wy[2] = wz[2] * fov / wy[2] + (window->GetHeight() / 2);
-                        wy[3] = wz[3] * fov / wy[3] + (window->GetHeight() / 2);
+                        wy[0] = wz[0] * cc.fov / wy[0] + (vp->GetTransformation().h / 2);
+                        wy[1] = wz[1] * cc.fov / wy[1] + (vp->GetTransformation().h / 2);
+                        wy[2] = wz[2] * cc.fov / wy[2] + (vp->GetTransformation().h / 2);
+                        wy[3] = wz[3] * cc.fov / wy[3] + (vp->GetTransformation().h / 2);
                         
                         if (wy[0] < 1 && wy[1] < 1) break;
 
@@ -298,7 +274,7 @@ namespace Cobra
                             ClipBehindCamera(wx[3], wy[3], wz[3], wx[2], wy[2], wz[2]); // top
                         }
                         
-                        DrawWall(wx[0], wx[1], wy[0], wy[1], wy[2], wy[3], sectors[index].surface, cs.surf_points, cs.view, wall.wall_color, cs.top_color, cs.bottom_color);
+                        DrawWall(wx[0], wx[1], wy[0], wy[1], wy[2], wy[3], sectors[index].surface, cs.surf_points, cs.view, wall.wall_color, cs.top_color, cs.bottom_color, vp);
                     }
                     sectors[index].surface *= -1;
                 }
@@ -323,7 +299,7 @@ namespace Cobra
     }
 
     // Display wall from perspective of current_camera
-    void Renderer::DrawWall(double x1, double x2, double t1, double t2, double b1, double b2, int surface, int* points, int view, Color wc, Color tc, Color bc)
+    void Renderer::DrawWall(double x1, double x2, double t1, double t2, double b1, double b2, int surface, int* points, int view, Color wc, Color tc, Color bc, ViewPort* vp)
     {
         // differences
         int dyb = floor(b2) - floor(b1);
@@ -339,12 +315,12 @@ namespace Cobra
 
         if (x1 < 0) x1 = 0;
         if (x2 < 0) x2 = 0;
-        if (x1 > window->GetWidth()) x1 = window->GetWidth();
-        if (x2 > window->GetWidth()) x2 = window->GetWidth();
+        if (x1 > vp->GetTransformation().w) x1 = vp->GetTransformation().w;
+        if (x2 > vp->GetTransformation().w) x2 = vp->GetTransformation().w;
 
         for (int x = xs; x < xf; x++)
         {
-            if (x >= 0 && x < window->GetWidth())
+            if (x >= 0 && x < vp->GetTransformation().w)
             {
                 int y2 = dyb * (x - xs) / dx + b1;
                 int y1 = dyt * (x - xs) / dx + t1;
@@ -386,8 +362,8 @@ namespace Cobra
                     // Normal Wall
                     glColor3ub(wc.r, wc.g, wc.b);
 
-                    Clamp(y1, 0, window->GetHeight(), false);
-                    Clamp(y2, 0, window->GetHeight(), false);
+                    Clamp(y1, 0, vp->GetTransformation().h, false);
+                    Clamp(y2, 0, vp->GetTransformation().h, false);
 
                     int y = y1, yt = y2, dir = 1;
 

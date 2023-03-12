@@ -13,7 +13,7 @@ namespace Cobra
     {
         if (ScriptPath != "")
         {
-            int w, h, r, p, fov, fps;
+            int w, h, r, p, fps;
 
             std::string t;
 
@@ -34,20 +34,19 @@ namespace Cobra
             lua_pushstring(settings, "Rendering");
             lua_gettable(settings, -2);
 
-            fov = LuaGetTableNumberValue<int>(settings, "Fov");
             fps = LuaGetTableNumberValue<int>(settings, "FPS");
 
-            Init(w, h, fov, fps, t.c_str());
+            Init(w, h, fps, t.c_str());
 
             lua_close(settings);
         } else {
-            Init(160, 120, 200, 30, "Cobra");
+            Init(160, 120, 30, "Cobra");
         }
     }
 
-    Window::Window(int Width, int Height, int Fov, int FPS, const char* Title)
+    Window::Window(int Width, int Height, int FPS, const char* Title)
     {
-        Init(Width, Height, Fov, FPS, Title);
+        Init(Width, Height, FPS, Title);
     }
 
     Window::~Window()
@@ -57,20 +56,19 @@ namespace Cobra
     }
 
     // Set member variables and create renderer
-    void Window::Init(int Width, int Height, int Fov, int FPS, const char* Title)
+    void Window::Init(int Width, int Height, int FPS, const char* Title)
     {
         window = this;
         
         screen_width = Width;
         screen_height = Height;
 
-        fov = Fov;
         fps = FPS;
         
         title = Title;
 
         CreateWindow();
-        Cobra::renderer = new Cobra::Renderer(fov);
+        Cobra::renderer = new Cobra::Renderer();
         rendering = true;
         return;
     }

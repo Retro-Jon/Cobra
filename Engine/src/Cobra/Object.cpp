@@ -54,7 +54,7 @@ namespace Cobra
         queued = false;
     }
 
-    void Object::Ready(std::string ScriptPath)
+    void Object::Ready(const char* ScriptPath)
     {
         if (queued) return;
         
@@ -64,16 +64,16 @@ namespace Cobra
             lua_pushnumber(script, idx);
             lua_setglobal(script, "InstanceID");
 
-            luaL_dofile(script, ScriptPath.c_str());
+            luaL_dofile(script, ScriptPath);
 
             luaL_openlibs(script);
             LuaRegisterFunctions(script);
             
-            std::string funcs[] = {"OnReady", "KeyInput", "Logic", "Event"};
+            const char* funcs[] = {"OnReady", "KeyInput", "Logic", "Event"};
 
-            for (std::string f : funcs)
+            for (const char* f : funcs)
             {
-                lua_getglobal(script, f.c_str());
+                lua_getglobal(script, f);
 
                 script_functions[f] = false;
 
@@ -116,7 +116,7 @@ namespace Cobra
         DeletionQueue.push(this);
     }
 
-    bool Object::has_function(std::string name)
+    bool Object::has_function(const char* name)
     {
         return script_functions[name];
     }
@@ -153,7 +153,7 @@ namespace Cobra
         }
     }
 
-    void Object::Event(std::string e)
+    void Object::Event(const char* e)
     {
         if (queued) return;
 
@@ -163,7 +163,7 @@ namespace Cobra
             
             if (lua_isfunction(script, 1))
             {
-                lua_pushstring(script, e.c_str());
+                lua_pushstring(script, e);
                 
                 if (script != nullptr)
                 {
@@ -216,14 +216,14 @@ namespace Cobra
         position.z += force.z * ElapsedTime;
     }
 
-    void Object::BindToCamera(std::string camera)
+    void Object::BindToCamera(const char* camera)
     {
         if (queued) return;
 
         bound_camera = camera;
     }
 
-    std::string Object::GetBoundCamera()
+    const char* Object::GetBoundCamera()
     {
         return bound_camera;
     }

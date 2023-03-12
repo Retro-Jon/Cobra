@@ -71,7 +71,7 @@ int BindToCamera(lua_State* L)
     lua_getglobal(L, "InstanceID");
     int idx = lua_tointeger(L, -1);
 
-    std::string cam = lua_tostring(L, 1);
+    const char* cam = lua_tostring(L, 1);
 
     Cobra::objects[idx]->BindToCamera(cam);
     return 0;
@@ -79,7 +79,7 @@ int BindToCamera(lua_State* L)
 
 int TriggerEvent(lua_State* L)
 {
-    std::string e = lua_tostring(L, 1);
+    const char* e = lua_tostring(L, 1);
 
     for (std::pair<int, Cobra::Object*> o : Cobra::objects)
     {
@@ -90,23 +90,24 @@ int TriggerEvent(lua_State* L)
 
 int CreateCamera(lua_State* L)
 {
-    std::string name = lua_tostring(L, 1);
+    const char* name = lua_tostring(L, 1);
 
-    Cobra::Pos p;
-    p.x = (double)lua_tonumber(L, 2);
-    p.y = (double)lua_tonumber(L, 3);
-    p.z = (double)lua_tonumber(L, 4);
-    p.horizontal = (double)lua_tointeger(L, 5);
-    p.vertical = (double)lua_tonumber(L, 6);
+    Cobra::Camera c;
+    c.position.x = (double)lua_tonumber(L, 2);
+    c.position.y = (double)lua_tonumber(L, 3);
+    c.position.z = (double)lua_tonumber(L, 4);
+    c.position.horizontal = (double)lua_tointeger(L, 5);
+    c.position.vertical = (double)lua_tonumber(L, 6);
+    c.fov = lua_tointeger(L, 7);
 
-    Cobra::renderer->CreateNewCamera(name, p);
+    Cobra::renderer->CreateNewCamera(name, c);
 
     return 0;
 }
 
 int CreateObject(lua_State* L)
 {
-    std::string name = lua_tostring(L, 1);
+    const char* name = lua_tostring(L, 1);
     Cobra::CreateObject(name);
     return 0;
 }

@@ -4,10 +4,7 @@ namespace Cobra
 {
     ViewPort::ViewPort(int x, int y, int w, int h)
     {
-        pos_x = x;
-        pos_y = y;
-        width = w;
-        height = h;
+        UI::SetTransformation(x, y, w, h);
 
         glewInit();
     }
@@ -19,6 +16,15 @@ namespace Cobra
     void ViewPort::MakeRenderTarget()
     {
         glBindRenderbuffer(GL_DRAW_BUFFER, 0);
-        glViewport(pos_x, pos_y, width, height);
+    }
+
+    void ViewPort::BindCamera(const char* camera_name)
+    {
+        camera = camera_name;
+    }
+
+    const char* ViewPort::GetBoundCamera()
+    {
+        return camera;
     }
 }
