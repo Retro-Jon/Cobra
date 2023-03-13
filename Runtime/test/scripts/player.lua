@@ -12,7 +12,7 @@ move_speed = 60
 look_speed = 55
 
 function OnReady()
-    CreateCamera("player_view", 0, -60, 0, 0, 90, 180)
+    CreateCamera("player_view", 0, -60, 0, 0, 90, 250)
     ConnectCamera("player_view")
     SetViewPortCamera("main_view", "player_view")
 
@@ -20,8 +20,8 @@ function OnReady()
     CreateViewPort("test_view", 0, 0, 200, 200)
     SetViewPortCamera("test_view", "test_camera")
 
-    CreateCamera("test_camera2", 0, -50, 0, 0, 90, 90)
-    CreateViewPort("test_view2", 300, 0, 150, 150)
+    CreateCamera("test_camera2", 0, -60, 0, 10, 90, 180)
+    CreateViewPort("test_view2", 500, 0, 300, 300)
     SetViewPortCamera("test_view2", "test_camera2")
 
     -- x = -move_speed
@@ -76,10 +76,10 @@ function KeyInput(key, action)
         end
 
         if(key == 82) then -- R
-            v = -look_speed
+            v = look_speed
             --print("Look Up")
         elseif(key == 70) then -- F
-            v = look_speed
+            v = -look_speed
             --print("Look Down")
         end
 
@@ -98,7 +98,7 @@ function KeyInput(key, action)
             h = 0
         elseif((key == 69 and z < 0) or (key == 81 and z > 0)) then -- Q or E
             z = 0
-        elseif((key == 82 and v < 0) or (key == 70 and v > 0)) then -- R or F
+        elseif((key == 70 and v < 0) or (key == 82 and v > 0)) then -- R or F
             v = 0
         end
     end
@@ -106,7 +106,7 @@ end
 
 function Logic()
     Push(x, y, z, h, v)
-    PushCamera("test_camera2", 25, 0, 0, -20, 0)
+    PushCamera("test_camera2", 60, 0, 0, -55, 0)
 end
 
 function OnDelete()
