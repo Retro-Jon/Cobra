@@ -216,7 +216,7 @@ namespace Cobra
         position.z += force.z * ElapsedTime;
     }
 
-    void Object::BindToCamera(const char* camera)
+    void Object::ConnectCamera(const char* camera)
     {
         if (queued) return;
 

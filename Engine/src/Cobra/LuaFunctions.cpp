@@ -66,14 +66,23 @@ int Push(lua_State* L)
     return 0;
 }
 
-int BindToCamera(lua_State* L)
+int ConnectCamera(lua_State* L)
 {
     lua_getglobal(L, "InstanceID");
     int idx = lua_tointeger(L, -1);
 
     const char* cam = lua_tostring(L, 1);
 
-    Cobra::objects[idx]->BindToCamera(cam);
+    Cobra::objects[idx]->ConnectCamera(cam);
+    return 0;
+}
+
+int SetViewPortCamera(lua_State* L)
+{
+    const char* view_port = lua_tostring(L, 1);
+    const char* cam = lua_tostring(L, 2);
+
+    Cobra::renderer->SetViewPortCamera(view_port, cam);
     return 0;
 }
 
@@ -105,9 +114,53 @@ int CreateCamera(lua_State* L)
     return 0;
 }
 
+int CreateViewPort(lua_State* L)
+{
+    const char* name = lua_tostring(L, 1);
+    int x = lua_tointeger(L, 2);
+    int y = lua_tointeger(L, 3);
+    int w = lua_tointeger(L, 4);
+    int h = lua_tointeger(L, 5);
+
+    Cobra::renderer->CreateViewPort(name, x, y, w, h);
+    return 0;
+}
+
 int CreateObject(lua_State* L)
 {
     const char* name = lua_tostring(L, 1);
     Cobra::CreateObject(name);
+    return 0;
+}
+
+int MoveCamera(lua_State* L)
+{
+    Cobra::Pos f;
+
+    const char* name = lua_tostring(L, 1);
+
+    f.x = (double)lua_tonumber(L, 2);
+    f.y = (double)lua_tonumber(L, 3);
+    f.z = (double)lua_tonumber(L, 4);
+    f.horizontal = (double)lua_tonumber(L, 5);
+    f.vertical = (double)lua_tonumber(L, 6);
+    
+    Cobra::renderer->MoveCamera(name, f);
+    return 0;
+}
+
+int PushCamera(lua_State* L)
+{
+    Cobra::Pos f;
+
+    const char* name = lua_tostring(L, 1);
+
+    f.x = (double)lua_tonumber(L, 2);
+    f.y = (double)lua_tonumber(L, 3);
+    f.z = (double)lua_tonumber(L, 4);
+    f.horizontal = (double)lua_tonumber(L, 5);
+    f.vertical = (double)lua_tonumber(L, 6);
+    
+    Cobra::renderer->PushCamera(name, f);
     return 0;
 }

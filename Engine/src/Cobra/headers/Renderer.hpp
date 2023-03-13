@@ -2,12 +2,12 @@
 
 #include <vector>
 #include <map>
-#include <string>
 
 #include "Core.hpp"
 #include "Sectors.hpp"
 #include "General.hpp"
 #include "ViewPort.hpp"
+#include <string>
 
 namespace Cobra
 {
@@ -15,18 +15,17 @@ namespace Cobra
     {
         Pos position;
         int fov;
+        std::vector<int> sector_order;
     };
 
     class COBRA_API Renderer
     {
         private:
-            std::map<const char*, Camera> cameras;
-            std::map<const char*, ViewPort*> view_ports;
+            std::map<std::string, Camera> cameras;
+            std::map<std::string, ViewPort*> view_ports;
             std::vector<Sector> sectors;
-            std::vector<int> sector_order;
             int current_sector;
             int max_distance = 200;
-            ViewPort* main_view;
         
         public:
             Renderer();
@@ -35,12 +34,15 @@ namespace Cobra
             void AddSector(Sector n_sector);
             void SetSectors(std::vector<Sector> n_sectors);
             std::vector<Sector> GetSectors();
-            void MoveCamera(const char* name = "", Pos position = (Pos){.x = 0, .y = 0, .z = 0, .horizontal = 0, .vertical = 0});
-            void PushCamera(const char* name = "", Pos force = (Pos){.x = 0, .y = 0, .z = 0, .horizontal = 0, .vertical = 0});
-            void CreateNewCamera(const char* name, Camera n_camera = (Camera){.position = (Pos){.x = 0, .y = 0, .z = 0, .horizontal = 0, .vertical = 0}, .fov = 0});
+            void MoveCamera(std::string name = "", Pos position = (Pos){.x = 0, .y = 0, .z = 0, .horizontal = 0, .vertical = 0});
+            void PushCamera(std::string name = "", Pos force = (Pos){.x = 0, .y = 0, .z = 0, .horizontal = 0, .vertical = 0});
+            void CreateNewCamera(std::string name, Camera n_camera = (Camera){.position = (Pos){.x = 0, .y = 0, .z = 0, .horizontal = 0, .vertical = 0}, .fov = 0});
             int GetCameraCount();
 
-            void BubbleSortSectors(double z);
+            void CreateViewPort(std::string name, int x, int y, int w, int h);
+            void SetViewPortCamera(std::string viewport, std::string camera);
+
+            void BubbleSortSectors(std::vector<int>& order, double z);
             void RenderView();
 
             void ClipBehindCamera(double& x1, double& y1, double& z1, const double& x2, const double& y2, const double& z2);

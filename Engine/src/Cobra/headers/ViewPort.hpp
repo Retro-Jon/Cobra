@@ -2,20 +2,20 @@
 
 #include "Core.hpp"
 #include "UI.hpp"
+#include <string>
 
 namespace Cobra
 {
     class COBRA_API ViewPort : public UI
     {
         private:
-            const char* camera;
+            std::string camera;
         
         public:
             ViewPort(int x, int y, int w, int h);
             ~ViewPort();
-            void MakeRenderTarget();
-            void BindCamera(const char* camera_name);
+            void BindCamera(std::string camera_name);
             
-            const char* GetBoundCamera();
+            std::string GetBoundCamera();
     };
 }

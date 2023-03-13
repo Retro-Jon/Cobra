@@ -88,7 +88,7 @@ namespace Cobra
         glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
 
         glfwMakeContextCurrent(screen);
-        glOrtho(0, screen_width, 0, screen_height, -1.0f, 1.0f);
+        glOrtho(0, screen_width, screen_height, 0, -1.0f, 1.0f);
 
         running = true;
     }
@@ -125,6 +125,7 @@ namespace Cobra
         {
             if (IsRendering())
             {
+                glClearColor(0, 0, 0, 1);
                 glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
                 renderer->RenderView();
                 glfwSwapBuffers(screen);
